@@ -30,7 +30,7 @@ export async function getOpenAIConfiguration() {
   const encryptedApiKey = String(value.encryptedApiKey ?? "");
   return {
     apiKey: encryptedApiKey ? decrypt(encryptedApiKey) : process.env.OPENAI_API_KEY ?? "",
-    model: String(value.model ?? process.env.OPENAI_MODEL ?? defaultModel),
+    model: String(value.model ?? (process.env.OPENAI_API_KEY ? process.env.OPENAI_MODEL : undefined) ?? defaultModel),
     storedInSystem: Boolean(encryptedApiKey),
   };
 }
