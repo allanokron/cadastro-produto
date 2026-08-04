@@ -1,7 +1,7 @@
 import { prisma } from "./db";
 import { mapSourceRow, readPublicSheet } from "./sheets";
 import { createMatchIndexes, matchIndexed } from "./matching";
-import { parseDecimal } from "./normalization";
+import { parseDecimal, skuIdentity } from "./normalization";
 import { validatePhysicalData } from "./validation";
 
 type Loaded = ReturnType<typeof mapSourceRow> & { rowNumber:number; sourceId:string };
@@ -32,7 +32,11 @@ export async function processSync(runId:string){
       }catch(error){errors.push(`${source.name}: ${error instanceof Error?error.message:"erro de leitura"}`);loaded.set(source.type,[])}
       await prisma.syncRun.update({where:{id:runId},data:{progress:10+index*10}});
     }
-    const senior=loaded.get("SENIOR")??[];const tiny=loaded.get("TINY")??[];const stock=loaded.get("STOCK")??[];const classifications=loaded.get("CLASSIFICATION")??[];const prices=loaded.get("PRICE_COST")??[];
+    const seniorAll=loaded.get("SENIOR")??[];const tiny=loaded.get("TINY")??[];const stock=loaded.get("STOCK")??[];const classifications=loaded.get("CLASSIFICATION")??[];const prices=loaded.get("PRICE_COST")??[];
+    const inactive=await prisma.productOverride.findMany({where:{excludedFromAnalysis:true},select:{skuKey:true}});
+    const inactiveIdentities=new Set(inactive.map((item)=>skuIdentity(item.skuKey)).filter(Boolean));
+    const senior=seniorAll.filter((item)=>!inactiveIdentities.has(skuIdentity(item.skuKey)));
+    counts.EXCLUDED_INACTIVE=seniorAll.length-senior.length;
     const snapshots=[];let pending=0;let withStock=0;
     const indexes={tiny:createMatchIndexes(tiny),stock:createMatchIndexes(stock),classifications:createMatchIndexes(classifications),prices:createMatchIndexes(prices)};
     const skuCounts=new Map<string,number>();

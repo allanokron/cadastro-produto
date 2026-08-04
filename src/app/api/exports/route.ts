@@ -5,6 +5,7 @@ import { assertSameOrigin, requireSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { generateTinyWorkbook, ExportColumn } from "@/lib/tiny-export";
 import { generateImageUrls } from "@/lib/image-urls";
+import { skuIdentity } from "@/lib/normalization";
 
 export const maxDuration = 300;
 const defaults: ExportColumn[] = [
@@ -26,6 +27,8 @@ export async function POST(request: Request) {
     const latest = await prisma.syncRun.findFirst({ where: { status: { in: ["COMPLETED", "PARTIAL"] } }, orderBy: { createdAt: "desc" } });
     if (!latest) throw new Error("Execute uma atualização antes de exportar.");
     const snapshots = await prisma.productSnapshot.findMany({ where: { syncRunId: latest.id, skuKey: { in: skuKeys } } });
+    const inactive = await prisma.productOverride.findMany({ where: { excludedFromAnalysis: true }, select: { skuKey: true } });
+    const inactiveIdentities = new Set(inactive.map((item) => skuIdentity(item.skuKey)).filter(Boolean));
     const template = await prisma.tinyTemplate.findFirst({ where: { active: true }, orderBy: { createdAt: "desc" } });
     const setting = await prisma.appSetting.findUnique({ where: { key: "content" } });
     const config = (setting?.value ?? {}) as Record<string, unknown>;
@@ -33,6 +36,7 @@ export async function POST(request: Request) {
     runId = run.id;
     const products = [];
     for (const item of snapshots) {
+      if (inactiveIdentities.has(skuIdentity(item.skuKey))) continue;
       const override = await prisma.productOverride.findUnique({ where: { skuKey: item.skuKey } });
       if (override?.excludedFromAnalysis) continue;
       const imageUrls = (override?.imageUrls as string[] | null) ?? generateImageUrls({ pattern: String(config.imageUrlPattern ?? ""), sku: item.sku, ean: item.ean, count: Number(config.imageCount ?? 5), start: Number(config.imageStart ?? 1), extension: String(config.imageExtension ?? "jpg") });

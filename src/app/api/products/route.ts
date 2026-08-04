@@ -3,6 +3,7 @@ import { requireSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { generateImageUrls } from "@/lib/image-urls";
 import { validatePhysicalData } from "@/lib/validation";
+import { skuIdentity } from "@/lib/normalization";
 
 function text(data: unknown, key: string) { return String((data as Record<string, unknown> | null)?.[key] ?? "").trim(); }
 function flexibleId(data: unknown, configured: string) {
@@ -25,10 +26,12 @@ export async function GET(request: Request) {
       prisma.dataSource.findUnique({ where: { type: "TINY" } }),
     ]);
     const inactiveKeys = inactive.map((item) => item.skuKey);
+    const inactiveIdentities = new Set(inactiveKeys.map(skuIdentity).filter(Boolean));
     const where = mode === "validation"
       ? { syncRunId: run.id, tinyData: { not: undefined }, skuKey: { notIn: inactiveKeys } }
       : { syncRunId: run.id, comparisonStatus: "PENDING_TINY" as const, skuKey: { notIn: inactiveKeys } };
-    const items = await prisma.productSnapshot.findMany({ where, orderBy: [{ stock: "desc" }, { name: "asc" }], take: 20000 });
+    const queriedItems = await prisma.productSnapshot.findMany({ where, orderBy: [{ stock: "desc" }, { name: "asc" }], take: 20000 });
+    const items = queriedItems.filter((item) => !inactiveIdentities.has(skuIdentity(item.skuKey)));
     const keys = items.map((item) => item.skuKey);
     const [overrides, generations] = await Promise.all([
       prisma.productOverride.findMany({ where: { skuKey: { in: keys } } }),

@@ -7,6 +7,11 @@ export function normalizeSku(value: unknown): string {
   return asText(value).normalize("NFKC").trim().replace(/\s+/g, " ").toUpperCase();
 }
 
+// Mantém a exclusão estável quando a fonte muda apenas a pontuação do SKU.
+export function skuIdentity(value: unknown): string {
+  return normalizeSku(value).replace(/[^\p{L}\p{N}]/gu, "");
+}
+
 export function normalizeEan(value: unknown): string {
   return asText(value).normalize("NFKC").trim().replace(/[\s.-]/g, "");
 }
