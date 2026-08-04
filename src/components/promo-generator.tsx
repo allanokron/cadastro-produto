@@ -24,6 +24,18 @@ type Product = {
 
 type SelectedProduct = Product & { promoPrice: string; minQty: string };
 
+function toPromoItem(item: SelectedProduct) {
+  return {
+    skuKey: item.skuKey,
+    sku: item.sku,
+    name: item.name,
+    stock: item.stock,
+    firstImageUrl: item.firstImageUrl,
+    promoPrice: item.promoPrice,
+    minQty: item.minQty,
+  };
+}
+
 const VENDOR_KEY = "promo_vendor_config";
 
 function loadVendorConfig(): VendorConfig {
@@ -127,15 +139,22 @@ export function PromoGenerator() {
       container.style.zIndex = "-1";
       container.style.background = "white";
 
+      const promoItems = selected.map(toPromoItem);
+      const canvasOpts = {
+        useCORS: true,
+        allowTaint: true,
+        scale: 2,
+        backgroundColor: "#ffffff",
+        imageTimeout: 15000,
+        logging: false,
+      };
+
       if (format === "image-ig") {
-        container.innerHTML = buildInstagramHtml(selected, vendor);
+        container.innerHTML = buildInstagramHtml(promoItems, vendor);
         const canvas = await html2canvas(container.firstElementChild as HTMLElement, {
-          useCORS: true,
-          allowTaint: true,
-          scale: 2,
+          ...canvasOpts,
           width: 1080,
           height: 1080,
-          backgroundColor: "#ffffff",
         });
         const link = document.createElement("a");
         link.download = `promocao-instagram-${Date.now()}.png`;
@@ -143,7 +162,7 @@ export function PromoGenerator() {
         link.click();
         setToast("Imagem Instagram gerada!");
       } else {
-        const pages = chunkItems(selected, 6);
+        const pages = chunkItems(promoItems, 6);
         const allPageDivs: HTMLElement[] = [];
         container.innerHTML = buildA4Html(pages, vendor);
         const pageEls = container.querySelectorAll(":scope > div");
@@ -152,12 +171,9 @@ export function PromoGenerator() {
         const pdf = new jsPDF("p", "mm", "a4");
         for (let i = 0; i < allPageDivs.length; i++) {
           const canvas = await html2canvas(allPageDivs[i], {
-            useCORS: true,
-            allowTaint: true,
-            scale: 2,
+            ...canvasOpts,
             width: 794,
             height: 1123,
-            backgroundColor: "#ffffff",
           });
           if (i > 0) pdf.addPage();
           const imgData = canvas.toDataURL("image/jpeg", 0.92);

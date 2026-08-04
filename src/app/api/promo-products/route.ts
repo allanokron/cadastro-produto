@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { generateImageUrls } from "@/lib/image-urls";
+import { extractImageUrls, generateImageUrls } from "@/lib/image-urls";
 
 export async function GET(request: Request) {
   try {
@@ -15,15 +15,19 @@ export async function GET(request: Request) {
     });
     if (!run) return NextResponse.json({ items: [] });
 
-    const [settings, inactive] = await Promise.all([
+    const [settings, inactive, overrides] = await Promise.all([
       prisma.appSetting.findUnique({ where: { key: "content" } }),
       prisma.productOverride.findMany({
         where: { excludedFromAnalysis: true },
         select: { skuKey: true },
       }),
+      prisma.productOverride.findMany({
+        select: { skuKey: true, imageUrls: true },
+      }),
     ]);
 
     const inactiveKeys = inactive.map((i) => i.skuKey);
+    const overrideMap = new Map(overrides.map((o) => [o.skuKey, o]));
     const config = (settings?.value ?? {}) as Record<string, unknown>;
 
     const where = {
@@ -57,6 +61,7 @@ export async function GET(request: Request) {
     });
 
     const items = rows.map((row) => {
+      const override = overrideMap.get(row.skuKey);
       const generated = generateImageUrls({
         pattern: String(config.imageUrlPattern ?? ""),
         sku: row.sku,
@@ -65,7 +70,9 @@ export async function GET(request: Request) {
         start: Number(config.imageStart ?? 1),
         extension: String(config.imageExtension ?? "jpg"),
       });
-      const firstImageUrl = generated[0] ?? null;
+      const seniorUrls = extractImageUrls(row.seniorData);
+      const imageUrls = (override?.imageUrls as string[] | null) ?? [...new Set([...seniorUrls, ...generated])];
+      const firstImageUrl = imageUrls[0] ?? null;
 
       return {
         sku: row.sku,
