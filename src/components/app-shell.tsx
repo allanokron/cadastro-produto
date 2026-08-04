@@ -6,9 +6,9 @@ import { Ban, Boxes, Database, FileClock, FileSpreadsheet, Gauge, LogOut, Packag
 import clsx from "clsx";
 
 const links = [
-  ["/dashboard", "Dashboard", Gauge], ["/pendentes", "Pendentes", Boxes], ["/promocoes", "Promoções", Megaphone], ["/inativos", "Itens inativos", Ban], ["/validacao", "Validação", ShieldCheck],
+  ["/dashboard", "Dashboard", Gauge], ["/pendentes", "Pendentes", Boxes], ["/inativos", "Itens inativos", Ban], ["/validacao", "Validação", ShieldCheck],
   ["/historico", "Exportações", FileClock], ["/fontes", "Fontes", Database], ["/modelo-tiny", "Modelo Tiny", FileSpreadsheet],
-  ["/conteudo", "Conteúdo", WandSparkles], ["/variacoes", "Variações", PackageCheck], ["/conta", "Conta", UserRound],
+  ["/conteudo", "Conteúdo", WandSparkles], ["/variacoes", "Variações", PackageCheck], ["/promocoes", "Promoções", Megaphone], ["/conta", "Conta", UserRound],
 ] as const;
 
 export function AppShell({ children, login }: { children:React.ReactNode; login:string }) {
