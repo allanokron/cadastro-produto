@@ -1,0 +1,2 @@
+import {PageHeading} from "@/components/page-heading";import {TemplateManager} from "@/components/template-manager";import {prisma} from "@/lib/db";
+export default async function Modelo(){const template=await prisma.tinyTemplate.findFirst({where:{active:true},orderBy:{createdAt:"desc"}});return <><PageHeading title="Modelo de importação do Tiny" subtitle="Defina a ordem, origem e obrigatoriedade das colunas."/><TemplateManager initial={template}/></>}

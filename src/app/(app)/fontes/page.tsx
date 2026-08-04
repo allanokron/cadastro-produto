@@ -1,0 +1,2 @@
+import { prisma } from "@/lib/db";import { PageHeading } from "@/components/page-heading";import { SourcesManager } from "@/components/sources-manager";
+export default async function Fontes(){const sources=await prisma.dataSource.findMany({orderBy:{type:"asc"}});return <><PageHeading title="Configurações das fontes" subtitle="Conecte as cinco planilhas públicas e mapeie seus cabeçalhos."/><SourcesManager initial={sources.map((s)=>({...s,columnMapping:s.columnMapping as Record<string,string>}))}/></>}

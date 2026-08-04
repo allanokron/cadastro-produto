@@ -1,0 +1,2 @@
+import {PageHeading} from "@/components/page-heading";import {SettingsForm} from "@/components/settings-form";import {prisma} from "@/lib/db";
+export default async function Conteudo(){const setting=await prisma.appSetting.findUnique({where:{key:"content"}});return <><PageHeading title="Configurações de conteúdo" subtitle="Prompt da IA, imagens e conversões de unidades."/><SettingsForm initial={(setting?.value??{}) as Record<string,unknown>}/></>}

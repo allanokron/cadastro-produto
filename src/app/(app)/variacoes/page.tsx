@@ -1,0 +1,2 @@
+import {PageHeading} from "@/components/page-heading";import {VariationManager} from "@/components/variation-manager";import {prisma} from "@/lib/db";
+export default async function Variacoes(){const groups=await prisma.variationGroup.findMany({include:{items:true},orderBy:{createdAt:"desc"}});return <><PageHeading title="Produtos com variações" subtitle="Agrupe SKUs filhos e configure um ou dois atributos."/><VariationManager initial={groups}/></>}

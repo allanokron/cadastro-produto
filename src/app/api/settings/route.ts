@@ -1,0 +1,3 @@
+import {NextResponse} from "next/server";import {assertSameOrigin,requireSession} from "@/lib/auth";import {prisma} from "@/lib/db";
+export async function GET(){try{await requireSession();const item=await prisma.appSetting.findUnique({where:{key:"content"}});return NextResponse.json(item?.value??{})}catch{return NextResponse.json({error:"Não autorizado."},{status:401})}}
+export async function PUT(request:Request){try{assertSameOrigin(request);await requireSession();const value=await request.json();await prisma.appSetting.upsert({where:{key:"content"},update:{value},create:{key:"content",value}});return NextResponse.json({ok:true})}catch(error){return NextResponse.json({error:error instanceof Error?error.message:"Falha ao salvar."},{status:400})}}

@@ -1,0 +1,235 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SourceType {
+  SENIOR
+  TINY
+  STOCK
+  CLASSIFICATION
+  PRICE_COST
+}
+
+enum RunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  PARTIAL
+  FAILED
+}
+
+enum ProductStatus {
+  READY
+  REVIEW_REQUIRED
+  MISSING_REQUIRED
+  EXPORTED
+}
+
+enum MatchStatus {
+  PENDING_TINY
+  MATCHED_SKU
+  MATCHED_EAN
+  AMBIGUOUS
+  UNMATCHED
+  ID_MISSING
+  ID_DIVERGENT
+  CORRECT
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  login              String    @unique
+  passwordHash       String
+  mustChangePassword Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  sessions           Session[]
+  exportRuns          ExportRun[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  ipHash    String
+  success   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  @@index([ipHash, createdAt])
+}
+
+model DataSource {
+  id             String     @id @default(cuid())
+  name           String
+  type           SourceType @unique
+  spreadsheetUrl String
+  sheetName      String
+  keyPriority    Json       @default("[\"sku\",\"ean\"]")
+  columnMapping  Json
+  active         Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  records        SourceRecord[]
+}
+
+model SyncRun {
+  id          String            @id @default(cuid())
+  status      RunStatus         @default(PENDING)
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  counts      Json?
+  errors      Json?
+  progress    Int               @default(0)
+  createdAt   DateTime          @default(now())
+  records     SourceRecord[]
+  snapshots   ProductSnapshot[]
+}
+
+model SourceRecord {
+  id           String     @id @default(cuid())
+  syncRunId    String
+  dataSourceId String
+  rowNumber    Int
+  skuOriginal  String?
+  skuKey       String?
+  eanOriginal  String?
+  eanKey       String?
+  raw          Json
+  createdAt    DateTime   @default(now())
+  syncRun      SyncRun    @relation(fields: [syncRunId], references: [id], onDelete: Cascade)
+  dataSource   DataSource @relation(fields: [dataSourceId], references: [id], onDelete: Cascade)
+  @@index([syncRunId, skuKey])
+  @@index([syncRunId, eanKey])
+}
+
+model ProductSnapshot {
+  id                  String        @id @default(cuid())
+  syncRunId           String
+  sku                  String
+  skuKey               String
+  ean                  String?
+  eanKey               String?
+  name                 String
+  brand                String?
+  category             String?
+  seniorData            Json
+  tinyData              Json?
+  stock                 Decimal?
+  classification        String?
+  price                  Decimal?
+  cost                   Decimal?
+  comparisonStatus      MatchStatus
+  productStatus         ProductStatus @default(REVIEW_REQUIRED)
+  physicalIssues        Json?
+  createdAt             DateTime      @default(now())
+  syncRun               SyncRun       @relation(fields: [syncRunId], references: [id], onDelete: Cascade)
+  @@unique([syncRunId, skuKey])
+  @@index([syncRunId, comparisonStatus])
+  @@index([skuKey])
+}
+
+model ProductOverride {
+  id                    String   @id @default(cuid())
+  skuKey                String   @unique
+  weight                Decimal?
+  length                Decimal?
+  width                  Decimal?
+  height                 Decimal?
+  additionalInformation String?
+  approvedDescription   String?
+  imageUrls              Json?
+  variationType          String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model TinyTemplate {
+  id            String   @id @default(cuid())
+  name          String
+  fileUrl       String
+  fileName      String
+  fileChecksum  String?
+  columnMapping Json
+  headerRow     Int      @default(1)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model VariationGroup {
+  id           String          @id @default(cuid())
+  parentName   String
+  attribute1   String
+  attribute2   String?
+  exportConfig Json?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  items        VariationItem[]
+}
+
+model VariationItem {
+  id        String         @id @default(cuid())
+  groupId   String
+  skuKey    String
+  value1    String
+  value2    String?
+  group     VariationGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  @@unique([groupId, skuKey])
+  @@unique([groupId, value1, value2])
+}
+
+model AiGeneration {
+  id           String    @id @default(cuid())
+  skuKey       String
+  status       RunStatus @default(PENDING)
+  model        String
+  prompt       String
+  input        Json
+  output       String?
+  error        String?
+  approvedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  @@index([skuKey, createdAt])
+}
+
+model ExportRun {
+  id        String      @id @default(cuid())
+  userId    String
+  status    RunStatus   @default(PENDING)
+  fileUrl   String?
+  fileName  String?
+  quantity  Int         @default(0)
+  summary   Json?
+  error     String?
+  createdAt DateTime    @default(now())
+  user      User        @relation(fields: [userId], references: [id])
+  items     ExportItem[]
+}
+
+model ExportItem {
+  id           String    @id @default(cuid())
+  exportRunId  String
+  skuKey       String
+  exportedData Json
+  exportRun    ExportRun @relation(fields: [exportRunId], references: [id], onDelete: Cascade)
+  @@index([exportRunId])
+}
+
+model AppSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}

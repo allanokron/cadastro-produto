@@ -1,0 +1,2 @@
+import {describe,expect,it} from "vitest";import {validatePhysicalData} from "./validation";
+describe("medidas",()=>{it("rejeita vazios, zero e negativos",()=>expect(validatePhysicalData({weight:"",length:0,width:-1,height:"x"}).valid).toBe(false));it("sinaliza padrão artificial",()=>expect(validatePhysicalData({weight:1,length:1,width:1,height:1}).issues.weight).toContain("artificial"));it("aceita valores positivos",()=>expect(validatePhysicalData({weight:"1,5",length:10,width:20,height:30}).valid).toBe(true))});
