@@ -50,6 +50,9 @@ export type ProductOverrideMinAggregateOutputType = {
   additionalInformation: string | null
   approvedDescription: string | null
   variationType: string | null
+  excludedFromAnalysis: boolean | null
+  exclusionReason: string | null
+  excludedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -64,6 +67,9 @@ export type ProductOverrideMaxAggregateOutputType = {
   additionalInformation: string | null
   approvedDescription: string | null
   variationType: string | null
+  excludedFromAnalysis: boolean | null
+  exclusionReason: string | null
+  excludedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -79,6 +85,9 @@ export type ProductOverrideCountAggregateOutputType = {
   approvedDescription: number
   imageUrls: number
   variationType: number
+  excludedFromAnalysis: number
+  exclusionReason: number
+  excludedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -109,6 +118,9 @@ export type ProductOverrideMinAggregateInputType = {
   additionalInformation?: true
   approvedDescription?: true
   variationType?: true
+  excludedFromAnalysis?: true
+  exclusionReason?: true
+  excludedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -123,6 +135,9 @@ export type ProductOverrideMaxAggregateInputType = {
   additionalInformation?: true
   approvedDescription?: true
   variationType?: true
+  excludedFromAnalysis?: true
+  exclusionReason?: true
+  excludedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -138,6 +153,9 @@ export type ProductOverrideCountAggregateInputType = {
   approvedDescription?: true
   imageUrls?: true
   variationType?: true
+  excludedFromAnalysis?: true
+  exclusionReason?: true
+  excludedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -240,6 +258,9 @@ export type ProductOverrideGroupByOutputType = {
   approvedDescription: string | null
   imageUrls: runtime.JsonValue | null
   variationType: string | null
+  excludedFromAnalysis: boolean
+  exclusionReason: string | null
+  excludedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: ProductOverrideCountAggregateOutputType | null
@@ -278,6 +299,9 @@ export type ProductOverrideWhereInput = {
   approvedDescription?: Prisma.StringNullableFilter<"ProductOverride"> | string | null
   imageUrls?: Prisma.JsonNullableFilter<"ProductOverride">
   variationType?: Prisma.StringNullableFilter<"ProductOverride"> | string | null
+  excludedFromAnalysis?: Prisma.BoolFilter<"ProductOverride"> | boolean
+  exclusionReason?: Prisma.StringNullableFilter<"ProductOverride"> | string | null
+  excludedAt?: Prisma.DateTimeNullableFilter<"ProductOverride"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"ProductOverride"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductOverride"> | Date | string
 }
@@ -293,6 +317,9 @@ export type ProductOverrideOrderByWithRelationInput = {
   approvedDescription?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrls?: Prisma.SortOrderInput | Prisma.SortOrder
   variationType?: Prisma.SortOrderInput | Prisma.SortOrder
+  excludedFromAnalysis?: Prisma.SortOrder
+  exclusionReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  excludedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -311,6 +338,9 @@ export type ProductOverrideWhereUniqueInput = Prisma.AtLeast<{
   approvedDescription?: Prisma.StringNullableFilter<"ProductOverride"> | string | null
   imageUrls?: Prisma.JsonNullableFilter<"ProductOverride">
   variationType?: Prisma.StringNullableFilter<"ProductOverride"> | string | null
+  excludedFromAnalysis?: Prisma.BoolFilter<"ProductOverride"> | boolean
+  exclusionReason?: Prisma.StringNullableFilter<"ProductOverride"> | string | null
+  excludedAt?: Prisma.DateTimeNullableFilter<"ProductOverride"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"ProductOverride"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProductOverride"> | Date | string
 }, "id" | "skuKey">
@@ -326,6 +356,9 @@ export type ProductOverrideOrderByWithAggregationInput = {
   approvedDescription?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrls?: Prisma.SortOrderInput | Prisma.SortOrder
   variationType?: Prisma.SortOrderInput | Prisma.SortOrder
+  excludedFromAnalysis?: Prisma.SortOrder
+  exclusionReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  excludedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ProductOverrideCountOrderByAggregateInput
@@ -349,6 +382,9 @@ export type ProductOverrideScalarWhereWithAggregatesInput = {
   approvedDescription?: Prisma.StringNullableWithAggregatesFilter<"ProductOverride"> | string | null
   imageUrls?: Prisma.JsonNullableWithAggregatesFilter<"ProductOverride">
   variationType?: Prisma.StringNullableWithAggregatesFilter<"ProductOverride"> | string | null
+  excludedFromAnalysis?: Prisma.BoolWithAggregatesFilter<"ProductOverride"> | boolean
+  exclusionReason?: Prisma.StringNullableWithAggregatesFilter<"ProductOverride"> | string | null
+  excludedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ProductOverride"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ProductOverride"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ProductOverride"> | Date | string
 }
@@ -364,6 +400,9 @@ export type ProductOverrideCreateInput = {
   approvedDescription?: string | null
   imageUrls?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   variationType?: string | null
+  excludedFromAnalysis?: boolean
+  exclusionReason?: string | null
+  excludedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -379,6 +418,9 @@ export type ProductOverrideUncheckedCreateInput = {
   approvedDescription?: string | null
   imageUrls?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   variationType?: string | null
+  excludedFromAnalysis?: boolean
+  exclusionReason?: string | null
+  excludedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -394,6 +436,9 @@ export type ProductOverrideUpdateInput = {
   approvedDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrls?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   variationType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  exclusionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -409,6 +454,9 @@ export type ProductOverrideUncheckedUpdateInput = {
   approvedDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrls?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   variationType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  exclusionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -424,6 +472,9 @@ export type ProductOverrideCreateManyInput = {
   approvedDescription?: string | null
   imageUrls?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   variationType?: string | null
+  excludedFromAnalysis?: boolean
+  exclusionReason?: string | null
+  excludedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -439,6 +490,9 @@ export type ProductOverrideUpdateManyMutationInput = {
   approvedDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrls?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   variationType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  exclusionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -454,6 +508,9 @@ export type ProductOverrideUncheckedUpdateManyInput = {
   approvedDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrls?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   variationType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedFromAnalysis?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  exclusionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  excludedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -469,6 +526,9 @@ export type ProductOverrideCountOrderByAggregateInput = {
   approvedDescription?: Prisma.SortOrder
   imageUrls?: Prisma.SortOrder
   variationType?: Prisma.SortOrder
+  excludedFromAnalysis?: Prisma.SortOrder
+  exclusionReason?: Prisma.SortOrder
+  excludedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -490,6 +550,9 @@ export type ProductOverrideMaxOrderByAggregateInput = {
   additionalInformation?: Prisma.SortOrder
   approvedDescription?: Prisma.SortOrder
   variationType?: Prisma.SortOrder
+  excludedFromAnalysis?: Prisma.SortOrder
+  exclusionReason?: Prisma.SortOrder
+  excludedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -504,6 +567,9 @@ export type ProductOverrideMinOrderByAggregateInput = {
   additionalInformation?: Prisma.SortOrder
   approvedDescription?: Prisma.SortOrder
   variationType?: Prisma.SortOrder
+  excludedFromAnalysis?: Prisma.SortOrder
+  exclusionReason?: Prisma.SortOrder
+  excludedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -528,6 +594,9 @@ export type ProductOverrideSelect<ExtArgs extends runtime.Types.Extensions.Inter
   approvedDescription?: boolean
   imageUrls?: boolean
   variationType?: boolean
+  excludedFromAnalysis?: boolean
+  exclusionReason?: boolean
+  excludedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["productOverride"]>
@@ -543,6 +612,9 @@ export type ProductOverrideSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   approvedDescription?: boolean
   imageUrls?: boolean
   variationType?: boolean
+  excludedFromAnalysis?: boolean
+  exclusionReason?: boolean
+  excludedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["productOverride"]>
@@ -558,6 +630,9 @@ export type ProductOverrideSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   approvedDescription?: boolean
   imageUrls?: boolean
   variationType?: boolean
+  excludedFromAnalysis?: boolean
+  exclusionReason?: boolean
+  excludedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["productOverride"]>
@@ -573,11 +648,14 @@ export type ProductOverrideSelectScalar = {
   approvedDescription?: boolean
   imageUrls?: boolean
   variationType?: boolean
+  excludedFromAnalysis?: boolean
+  exclusionReason?: boolean
+  excludedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ProductOverrideOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "skuKey" | "weight" | "length" | "width" | "height" | "additionalInformation" | "approvedDescription" | "imageUrls" | "variationType" | "createdAt" | "updatedAt", ExtArgs["result"]["productOverride"]>
+export type ProductOverrideOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "skuKey" | "weight" | "length" | "width" | "height" | "additionalInformation" | "approvedDescription" | "imageUrls" | "variationType" | "excludedFromAnalysis" | "exclusionReason" | "excludedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["productOverride"]>
 
 export type $ProductOverridePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ProductOverride"
@@ -593,6 +671,9 @@ export type $ProductOverridePayload<ExtArgs extends runtime.Types.Extensions.Int
     approvedDescription: string | null
     imageUrls: runtime.JsonValue | null
     variationType: string | null
+    excludedFromAnalysis: boolean
+    exclusionReason: string | null
+    excludedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["productOverride"]>
@@ -1028,6 +1109,9 @@ export interface ProductOverrideFieldRefs {
   readonly approvedDescription: Prisma.FieldRef<"ProductOverride", 'String'>
   readonly imageUrls: Prisma.FieldRef<"ProductOverride", 'Json'>
   readonly variationType: Prisma.FieldRef<"ProductOverride", 'String'>
+  readonly excludedFromAnalysis: Prisma.FieldRef<"ProductOverride", 'Boolean'>
+  readonly exclusionReason: Prisma.FieldRef<"ProductOverride", 'String'>
+  readonly excludedAt: Prisma.FieldRef<"ProductOverride", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"ProductOverride", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ProductOverride", 'DateTime'>
 }

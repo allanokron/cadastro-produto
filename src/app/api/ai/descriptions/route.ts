@@ -18,6 +18,7 @@ export async function POST(request: Request) {
     const config = (setting?.value ?? {}) as Record<string, unknown>;
     const prompt = String(config.aiPrompt ?? "Crie uma descrição comercial usando somente os dados fornecidos.");
     let generated = 0;
+    const outputs: Record<string, string> = {};
     const errors = [];
 
     for (const product of products) {
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
       try {
         const output = await generateDescription(input, prompt);
         await prisma.aiGeneration.update({ where: { id: attempt.id }, data: { status: "COMPLETED", output } });
+        outputs[product.skuKey] = output;
         generated++;
       } catch (error) {
         const message = error instanceof Error ? error.message : "Erro na geração";
@@ -34,8 +36,22 @@ export async function POST(request: Request) {
         await prisma.aiGeneration.update({ where: { id: attempt.id }, data: { status: "FAILED", error: message } });
       }
     }
-    return NextResponse.json({ generated, errors });
+    return NextResponse.json({ generated, errors, outputs });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Falha na geração." }, { status: 400 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    assertSameOrigin(request); await requireSession();
+    const { skuKey, description } = z.object({ skuKey: z.string().min(1), description: z.string().min(1) }).parse(await request.json());
+    await prisma.$transaction([
+      prisma.productOverride.upsert({ where: { skuKey }, update: { approvedDescription: description }, create: { skuKey, approvedDescription: description } }),
+      prisma.aiGeneration.updateMany({ where: { skuKey, output: description, status: "COMPLETED" }, data: { approvedAt: new Date() } }),
+    ]);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Falha ao aprovar." }, { status: 400 });
   }
 }

@@ -2,11 +2,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Boxes, Database, FileClock, FileSpreadsheet, Gauge, LogOut, PackageCheck, ShieldCheck, UserRound, WandSparkles } from "lucide-react";
+import { Ban, Boxes, Database, FileClock, FileSpreadsheet, Gauge, LogOut, PackageCheck, ShieldCheck, UserRound, WandSparkles } from "lucide-react";
 import clsx from "clsx";
 
 const links = [
-  ["/dashboard", "Dashboard", Gauge], ["/pendentes", "Pendentes", Boxes], ["/validacao", "Validação", ShieldCheck],
+  ["/dashboard", "Dashboard", Gauge], ["/pendentes", "Pendentes", Boxes], ["/inativos", "Itens inativos", Ban], ["/validacao", "Validação", ShieldCheck],
   ["/historico", "Exportações", FileClock], ["/fontes", "Fontes", Database], ["/modelo-tiny", "Modelo Tiny", FileSpreadsheet],
   ["/conteudo", "Conteúdo", WandSparkles], ["/variacoes", "Variações", PackageCheck], ["/conta", "Conta", UserRound],
 ] as const;

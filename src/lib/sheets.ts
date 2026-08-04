@@ -25,7 +25,12 @@ export async function readPublicSheet(url: string, sheetName: string) {
 }
 
 export function mapSourceRow(row: Record<string, unknown>, mapping: Record<string, string>) {
-  const read = (key: string) => asText(row[mapping[key]]).trim();
+  const read = (key: string) => {
+    const configured = asText(row[mapping[key]]).trim();
+    if (configured || key !== "tinyId") return configured;
+    const fallbackKey = Object.keys(row).find((column) => /(^id$|\bid$)/i.test(column.trim()));
+    return fallbackKey ? asText(row[fallbackKey]).trim() : "";
+  };
   const sku = read("sku");
   const ean = read("ean");
   return { row, sku, skuKey: normalizeSku(sku), ean, eanKey: normalizeEan(ean) || null, read };

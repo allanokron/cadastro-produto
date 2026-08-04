@@ -34,9 +34,9 @@ export async function POST(request: Request) {
     const products = [];
     for (const item of snapshots) {
       const override = await prisma.productOverride.findUnique({ where: { skuKey: item.skuKey } });
-      const ai = await prisma.aiGeneration.findFirst({ where: { skuKey: item.skuKey, status: "COMPLETED" }, orderBy: { createdAt: "desc" } });
+      if (override?.excludedFromAnalysis) continue;
       const imageUrls = (override?.imageUrls as string[] | null) ?? generateImageUrls({ pattern: String(config.imageUrlPattern ?? ""), sku: item.sku, ean: item.ean, count: Number(config.imageCount ?? 5), start: Number(config.imageStart ?? 1), extension: String(config.imageExtension ?? "jpg") });
-      products.push({ ...item, stock: item.stock?.toString(), price: item.price?.toString(), cost: item.cost?.toString(), approvedDescription: override?.approvedDescription ?? ai?.output ?? "", imageUrls });
+      products.push({ ...item, stock: item.stock?.toString(), price: item.price?.toString(), cost: item.cost?.toString(), weight: override?.weight, length: override?.length, width: override?.width, height: override?.height, approvedDescription: override?.approvedDescription ?? "", imageUrls });
     }
     const columns = (template?.columnMapping as unknown as ExportColumn[] | null) ?? defaults;
     let templateBuffer: Buffer | null = null;

@@ -199,6 +199,9 @@ export const ProductOverrideScalarFieldEnum = {
   approvedDescription: 'approvedDescription',
   imageUrls: 'imageUrls',
   variationType: 'variationType',
+  excludedFromAnalysis: 'excludedFromAnalysis',
+  exclusionReason: 'exclusionReason',
+  excludedAt: 'excludedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

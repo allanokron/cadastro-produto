@@ -152,8 +152,13 @@ model ProductOverride {
   approvedDescription   String?
   imageUrls              Json?
   variationType          String?
+  excludedFromAnalysis   Boolean  @default(false)
+  exclusionReason        String?
+  excludedAt             DateTime?
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
+
+  @@index([excludedFromAnalysis])
 }
 
 model TinyTemplate {

@@ -39,11 +39,13 @@ export async function processSync(runId:string){
     for(let productIndex=0;productIndex<senior.length;productIndex++){
       const product=senior[productIndex];
       if(!product.skuKey)continue;
-      const tinyMatch=matchIndexed(product,indexes.tiny);const stockMatch=matchIndexed(product,indexes.stock);const classMatch=matchIndexed(product,indexes.classifications);const priceMatch=matchIndexed(product,indexes.prices);
+      const tinyMatch=matchIndexed(product,indexes.tiny);const classMatch=matchIndexed(product,indexes.classifications);const priceMatch=matchIndexed(product,indexes.prices);
       let comparisonStatus:string=tinyMatch.status;
       if(tinyMatch.status==="UNMATCHED"){comparisonStatus="PENDING_TINY";pending++}
       if(duplicateSkus.has(product.skuKey))comparisonStatus="AMBIGUOUS";
-      const stockValue=decimal(stockMatch.record??undefined,"stock");if((stockValue??0)>0)withStock++;
+      const stockMatches=indexes.stock.sku.get(product.skuKey)??(product.eanKey?indexes.stock.ean.get(product.eanKey):undefined)??[];
+      const stockValues=stockMatches.map((item)=>decimal(item,"stock")).filter((value):value is number=>value!==null);
+      const stockValue=stockValues.length?stockValues.reduce((total,value)=>total+value,0):null;if((stockValue??0)>0)withStock++;
       const physical=validatePhysicalData({weight:mappedValue(product,"weight"),length:mappedValue(product,"length"),width:mappedValue(product,"width"),height:mappedValue(product,"height")});
       if(tinyMatch.record){const seniorId=mappedValue(product,"tinyId");const realId=mappedValue(tinyMatch.record,"tinyId");if(!seniorId&&realId)comparisonStatus="ID_MISSING";else if(seniorId&&realId&&seniorId!==realId)comparisonStatus="ID_DIVERGENT";else if(seniorId&&realId)comparisonStatus="CORRECT"}
       snapshots.push({syncRunId:runId,sku:product.sku,skuKey:product.skuKey,ean:product.ean||null,eanKey:product.eanKey,name:mappedValue(product,"name")||product.sku,brand:mappedValue(product,"brand")||null,category:mappedValue(product,"category")||null,seniorData:JSON.parse(JSON.stringify(product.row)),tinyData:tinyMatch.record?JSON.parse(JSON.stringify(tinyMatch.record.row)):undefined,stock:stockValue,classification:mappedValue(classMatch.record??undefined,"classification")||null,price:decimal(priceMatch.record??undefined,"price"),cost:decimal(priceMatch.record??undefined,"cost"),comparisonStatus:comparisonStatus as never,productStatus:(physical.valid?"READY":"REVIEW_REQUIRED") as never,physicalIssues:JSON.parse(JSON.stringify(physical.issues))});
