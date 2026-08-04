@@ -290,16 +290,16 @@ export function PromoGenerator() {
 
       <div className="card mb-6">
         <h3 className="mb-3 font-bold text-gray-700">Buscar e adicionar produtos</h3>
-        <div className="relative">
-          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 focus-within:border-[#1fadad] focus-within:shadow-[0_0_0_3px_rgba(31,173,173,0.14)]">
+          <Search size={16} className="shrink-0 text-gray-400" />
           <input
-            className="input pl-9"
+            className="w-full border-0 bg-transparent py-2.5 text-sm outline-none"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Buscar por nome, SKU ou EAN..."
           />
           {searching && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+            <span className="shrink-0 text-xs text-gray-400">
               Buscando...
             </span>
           )}
