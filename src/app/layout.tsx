@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "OKRon | Cadastro de Produtos",
+  title: "OKR.on | Cadastro de Produtos",
   description: "Cruzamento Senior e Tiny e geração de cadastro",
 };
 
