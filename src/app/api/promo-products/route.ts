@@ -68,12 +68,6 @@ export async function GET(request: Request) {
       },
     });
 
-    const skuKeys = rows.map((r) => r.skuKey);
-    const imageChecks = await prisma.imageCheck.findMany({
-      where: { skuKey: { in: skuKeys } },
-    });
-    const imageCheckMap = new Map(imageChecks.map((c) => [c.skuKey, c]));
-
     const items = rows.map((row) => {
       const override = overrideMap.get(row.skuKey);
       const generated = generateImageUrls({
@@ -102,13 +96,6 @@ export async function GET(request: Request) {
         ]),
       ];
 
-      const check = imageCheckMap.get(row.skuKey);
-      const signature = `v3:${JSON.stringify(imageUrls)}`;
-      const imagesChecked = check?.urlsSignature === signature;
-      const firstImageUrl = imagesChecked
-        ? (check?.availableUrl ?? imageUrls[0] ?? null)
-        : (imageUrls[0] ?? null);
-
       return {
         sku: row.sku,
         skuKey: row.skuKey,
@@ -116,8 +103,7 @@ export async function GET(request: Request) {
         brand: row.brand,
         stock: row.stock?.toString() ?? null,
         price: row.price?.toString() ?? null,
-        firstImageUrl,
-        imagesChecked,
+        imageUrls,
       };
     });
 

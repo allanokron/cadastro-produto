@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { Search, X, Trash2, FileImage, FileText, Upload, Settings } from "lucide-react";
@@ -19,7 +19,7 @@ type Product = {
   brand: string | null;
   stock: string | null;
   price: string | null;
-  firstImageUrl: string | null;
+  imageUrls: string[];
 };
 
 type SelectedProduct = Product & { promoPrice: string; minQty: string };
@@ -30,7 +30,7 @@ function toPromoItem(item: SelectedProduct) {
     sku: item.sku,
     name: item.name,
     stock: item.stock,
-    firstImageUrl: item.firstImageUrl,
+    firstImageUrl: item.imageUrls[0] ?? null,
     promoPrice: item.promoPrice,
     minQty: item.minQty,
   };
@@ -79,26 +79,6 @@ export function PromoGenerator() {
     } finally {
       setSearching(false);
     }
-  }, []);
-
-  const searchRef = useRef(search);
-  useEffect(() => { searchRef.current = search; });
-
-  useEffect(() => {
-    let active = true;
-    const check = async () => {
-      try {
-        await fetch("/api/image-checks", { method: "POST", headers: { "content-type": "application/json" } });
-        if (active && searchRef.current.trim()) {
-          const res = await fetch(`/api/promo-products?search=${encodeURIComponent(searchRef.current)}`);
-          const data = await res.json();
-          setResults(data.items ?? []);
-        }
-      } catch {}
-    };
-    void check();
-    const timer = setInterval(() => void check(), 60000);
-    return () => { active = false; clearInterval(timer); };
   }, []);
 
   function onSearchChange(value: string) {
@@ -334,23 +314,12 @@ export function PromoGenerator() {
                 onClick={() => addProduct(product)}
                 disabled={selected.some((p) => p.skuKey === product.skuKey)}
               >
-                {product.firstImageUrl ? (
-                  <img
-                    src={product.firstImageUrl}
-                    alt=""
-                    className="h-10 w-10 rounded border bg-white object-contain"
-                    crossOrigin="anonymous"
-                  />
-                ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded border bg-gray-100 text-xs text-gray-400">
-                    ?
-                  </div>
-                )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">{product.name}</p>
                   <p className="text-xs text-gray-500">
                     {product.sku}
                     {product.brand ? ` • ${product.brand}` : ""}
+                    {product.stock ? ` • Estoque: ${product.stock}` : ""}
                   </p>
                 </div>
                 {selected.some((p) => p.skuKey === product.skuKey) && (
@@ -393,9 +362,9 @@ export function PromoGenerator() {
               <thead>
                 <tr>
                   <th></th>
-                  <th>Foto</th>
                   <th>Produto</th>
                   <th>SKU</th>
+                  <th>Estoque</th>
                   <th>Preço promocional</th>
                   <th>Qtd mínima</th>
                 </tr>
@@ -411,20 +380,9 @@ export function PromoGenerator() {
                         <Trash2 size={16} />
                       </button>
                     </td>
-                    <td>
-                      {item.firstImageUrl ? (
-                        <img
-                          src={item.firstImageUrl}
-                          alt=""
-                          className="h-12 w-12 rounded border bg-white object-contain"
-                          crossOrigin="anonymous"
-                        />
-                      ) : (
-                        <span className="text-xs text-gray-400">Sem foto</span>
-                      )}
-                    </td>
                     <td className="font-semibold">{item.name}</td>
                     <td className="text-sm text-gray-500">{item.sku}</td>
+                    <td className="text-sm">{item.stock ?? "—"}</td>
                     <td>
                       <input
                         className="input w-32"
