@@ -33,12 +33,14 @@ export async function GET(request: Request) {
     const queriedItems = await prisma.productSnapshot.findMany({ where, orderBy: [{ stock: "desc" }, { name: "asc" }], take: 20000 });
     const items = queriedItems.filter((item) => !inactiveIdentities.has(skuIdentity(item.skuKey)));
     const keys = items.map((item) => item.skuKey);
-    const [overrides, generations] = await Promise.all([
+    const [overrides, generations, imageChecks] = await Promise.all([
       prisma.productOverride.findMany({ where: { skuKey: { in: keys } } }),
       prisma.aiGeneration.findMany({ where: { skuKey: { in: keys }, status: "COMPLETED" }, orderBy: { createdAt: "desc" } }),
+      prisma.imageCheck.findMany({ where: { skuKey: { in: keys } } }),
     ]);
     const overrideMap = new Map(overrides.map((item) => [item.skuKey, item]));
     const aiMap = new Map<string, string>();
+    const imageCheckMap = new Map(imageChecks.map((item) => [item.skuKey, item]));
     for (const item of generations) if (item.output && !aiMap.has(item.skuKey)) aiMap.set(item.skuKey, item.output);
     const config = (settings?.value ?? {}) as Record<string, unknown>;
     const seniorIdHeader = String((seniorSource?.columnMapping as Record<string, string> | null)?.tinyId ?? "");
@@ -53,11 +55,13 @@ export async function GET(request: Request) {
       });
       const generatedImages = generateImageUrls({ pattern: String(config.imageUrlPattern ?? ""), sku: item.sku, ean: item.ean, count: Number(config.imageCount ?? 5), start: Number(config.imageStart ?? 1), extension: String(config.imageExtension ?? "jpg") });
       const imageUrls = (override?.imageUrls as string[] | null) ?? generatedImages;
+      const imageCheck = imageCheckMap.get(item.skuKey);
+      const imagesChecked = imageCheck?.urlsSignature === JSON.stringify(imageUrls);
       const seniorId = flexibleId(item.seniorData, seniorIdHeader);
       const tinyId = flexibleId(item.tinyData, tinyIdHeader);
       const validationStatus = !seniorId && tinyId ? "ID_MISSING" : seniorId && tinyId && seniorId !== tinyId ? "ID_DIVERGENT" : seniorId && tinyId ? "CORRECT" : "ID_UNAVAILABLE";
       const needsReview = !physical.valid || !override?.approvedDescription || imageUrls.length === 0;
-      return { ...item, override, aiDescription: aiMap.get(item.skuKey) ?? null, physicalIssues: physical.issues, physicalValues: physical.values, imageUrls, needsReview, validationStatus, seniorTinyId: seniorId, tinyId };
+      return { ...item, override, aiDescription: aiMap.get(item.skuKey) ?? null, physicalIssues: physical.issues, physicalValues: physical.values, imageUrls, imagesChecked, allImagesUnavailable: imagesChecked && !imageCheck?.available, availableImageUrl: imagesChecked ? imageCheck?.availableUrl ?? null : null, needsReview, validationStatus, seniorTinyId: seniorId, tinyId };
     });
     return NextResponse.json({ items: mode === "validation" ? result.filter((item) => item.validationStatus !== "ID_UNAVAILABLE") : result, run: { id: run.id, createdAt: run.createdAt, finishedAt: run.finishedAt } });
   } catch (error) {

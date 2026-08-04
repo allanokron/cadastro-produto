@@ -239,3 +239,13 @@ model AppSetting {
   value     Json
   updatedAt DateTime @updatedAt
 }
+
+model ImageCheck {
+  skuKey       String   @id
+  urlsSignature String
+  available    Boolean
+  availableUrl String?
+  checkedAt    DateTime @default(now())
+
+  @@index([available])
+}
