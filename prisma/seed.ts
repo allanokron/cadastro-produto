@@ -4,17 +4,21 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 
 const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
 if (!connectionString) throw new Error("DIRECT_URL ou DATABASE_URL não configurada.");
-
 const prisma = new PrismaClient({ adapter: new PrismaNeon({ connectionString }) });
 
 async function main() {
+  const initialAdminPassword = process.env.INITIAL_ADMIN_PASSWORD;
+  if (!initialAdminPassword) throw new Error("INITIAL_ADMIN_PASSWORD não configurada.");
   await prisma.user.upsert({
-    where: { login: "Admin" },
-    update: {},
+    where: { login: "admin" },
+    update: {
+      passwordHash: await hash(initialAdminPassword, 12),
+      mustChangePassword: false,
+    },
     create: {
-      login: "Admin",
-      passwordHash: await hash("Admin", 12),
-      mustChangePassword: true,
+      login: "admin",
+      passwordHash: await hash(initialAdminPassword, 12),
+      mustChangePassword: false,
     },
   });
 

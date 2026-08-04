@@ -1,3 +1,22 @@
-import { NextResponse } from "next/server";import { compare } from "bcryptjs";import { z } from "zod";import { assertSameOrigin,createSession,requestIpHash } from "@/lib/auth";import { prisma } from "@/lib/db";
-const schema=z.object({login:z.string().min(1).max(80),password:z.string().min(1).max(200)});
-export async function POST(request:Request){try{assertSameOrigin(request);const body=schema.parse(await request.json());const ipHash=await requestIpHash();const windowStart=new Date(Date.now()-15*60*1000);const failures=await prisma.loginAttempt.count({where:{ipHash,success:false,createdAt:{gte:windowStart}}});if(failures>=8)return NextResponse.json({error:"Muitas tentativas. Aguarde 15 minutos."},{status:429});const user=await prisma.user.findUnique({where:{login:body.login}});const valid=user&&await compare(body.password,user.passwordHash);await prisma.loginAttempt.create({data:{ipHash,success:Boolean(valid)}});if(!user||!valid)return NextResponse.json({error:"Usuário ou senha inválidos."},{status:401});await createSession(user.id);return NextResponse.json({ok:true,mustChangePassword:user.mustChangePassword})}catch(error){return NextResponse.json({error:error instanceof Error?error.message:"Requisição inválida."},{status:400})}}
+import { NextResponse } from "next/server";
+import { compare } from "bcryptjs";
+import { z } from "zod";
+import { assertSameOrigin, createSession } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+
+const schema = z.object({ login: z.string().min(1), password: z.string().min(1) });
+
+export async function POST(request: Request) {
+  try {
+    assertSameOrigin(request);
+    const body = schema.parse(await request.json());
+    const user = await prisma.user.findUnique({ where: { login: body.login } });
+    if (!user || !(await compare(body.password, user.passwordHash))) {
+      return NextResponse.json({ error: "Usuário ou senha inválidos." }, { status: 401 });
+    }
+    await createSession(user.id);
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ error: "Não foi possível entrar." }, { status: 400 });
+  }
+}

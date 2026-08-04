@@ -4,7 +4,7 @@ Sistema interno para ler cinco bases públicas do Google Sheets, cruzar produtos
 
 ## Funcionalidades
 
-- Login administrativo com sessão segura e troca obrigatória da senha inicial.
+- Login administrativo simples, sem troca obrigatória da senha inicial.
 - Configuração das bases Senior, Tiny, estoque, classificação, preços e custos.
 - Mapeamento livre dos títulos das colunas e teste das conexões.
 - Cruzamento por SKU e, como alternativa, EAN; conflitos ambíguos nunca são resolvidos automaticamente.
@@ -23,7 +23,7 @@ Requisitos: Node.js 22+, pnpm e um projeto Neon.
 5. Crie o administrador: `pnpm db:seed`.
 6. Inicie: `pnpm dev`.
 
-O acesso inicial é `Admin` / `Admin`. O sistema exige uma nova senha no primeiro acesso.
+O usuário inicial é `admin`. Defina a senha por meio de `INITIAL_ADMIN_PASSWORD` antes de executar o seed.
 
 ## Neon
 
@@ -40,7 +40,7 @@ Configure `OPENAI_API_KEY` apenas no servidor. `OPENAI_MODEL` usa `gpt-5.6-luna`
 
 1. Importe o repositório e mantenha o preset Next.js.
 2. Conecte um Vercel Blob privado.
-3. Configure `DATABASE_URL`, `DIRECT_URL`, `SESSION_SECRET`, `OPENAI_API_KEY` e `OPENAI_MODEL` em Preview e Production.
+3. Configure `DATABASE_URL`, `DIRECT_URL`, `SESSION_SECRET`, `INITIAL_ADMIN_PASSWORD`, `OPENAI_API_KEY` e `OPENAI_MODEL` em Preview e Production.
 4. Execute `pnpm db:deploy` e `pnpm db:seed` antes do primeiro uso.
 5. Publique e verifique `/api/health`.
 

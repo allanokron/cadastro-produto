@@ -21,7 +21,6 @@ export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
     const session = await requireSession();
-    if (session.user.mustChangePassword) return NextResponse.json({ error: "Troque a senha inicial primeiro." }, { status: 403 });
     if (!process.env.BLOB_READ_WRITE_TOKEN) throw new Error("Conecte um Vercel Blob privado antes de exportar.");
     const { skuKeys } = z.object({ skuKeys: z.array(z.string()).min(1).max(20000) }).parse(await request.json());
     const latest = await prisma.syncRun.findFirst({ where: { status: { in: ["COMPLETED", "PARTIAL"] } }, orderBy: { createdAt: "desc" } });
