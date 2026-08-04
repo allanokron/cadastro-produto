@@ -1,6 +1,6 @@
 import { prisma } from "./db";
 import { mapSourceRow, readPublicSheet } from "./sheets";
-import { matchRecord } from "./matching";
+import { createMatchIndexes, matchIndexed } from "./matching";
 import { parseDecimal } from "./normalization";
 import { validatePhysicalData } from "./validation";
 
@@ -32,10 +32,14 @@ export async function processSync(runId:string){
     }
     const senior=loaded.get("SENIOR")??[];const tiny=loaded.get("TINY")??[];const stock=loaded.get("STOCK")??[];const classifications=loaded.get("CLASSIFICATION")??[];const prices=loaded.get("PRICE_COST")??[];
     const snapshots=[];let pending=0;let withStock=0;
-    const duplicateSkus=new Set(senior.filter((item,index)=>item.skuKey&&senior.findIndex(other=>other.skuKey===item.skuKey)!==index).map(item=>item.skuKey));
-    for(const product of senior){
+    const indexes={tiny:createMatchIndexes(tiny),stock:createMatchIndexes(stock),classifications:createMatchIndexes(classifications),prices:createMatchIndexes(prices)};
+    const skuCounts=new Map<string,number>();
+    for(const item of senior)if(item.skuKey)skuCounts.set(item.skuKey,(skuCounts.get(item.skuKey)??0)+1);
+    const duplicateSkus=new Set([...skuCounts].filter(([,count])=>count>1).map(([sku])=>sku));
+    for(let productIndex=0;productIndex<senior.length;productIndex++){
+      const product=senior[productIndex];
       if(!product.skuKey)continue;
-      const tinyMatch=matchRecord(product,tiny);const stockMatch=matchRecord(product,stock);const classMatch=matchRecord(product,classifications);const priceMatch=matchRecord(product,prices);
+      const tinyMatch=matchIndexed(product,indexes.tiny);const stockMatch=matchIndexed(product,indexes.stock);const classMatch=matchIndexed(product,indexes.classifications);const priceMatch=matchIndexed(product,indexes.prices);
       let comparisonStatus:string=tinyMatch.status;
       if(tinyMatch.status==="UNMATCHED"){comparisonStatus="PENDING_TINY";pending++}
       if(duplicateSkus.has(product.skuKey))comparisonStatus="AMBIGUOUS";
@@ -43,8 +47,10 @@ export async function processSync(runId:string){
       const physical=validatePhysicalData({weight:mappedValue(product,"weight"),length:mappedValue(product,"length"),width:mappedValue(product,"width"),height:mappedValue(product,"height")});
       if(tinyMatch.record){const seniorId=mappedValue(product,"tinyId");const realId=mappedValue(tinyMatch.record,"tinyId");if(!seniorId&&realId)comparisonStatus="ID_MISSING";else if(seniorId&&realId&&seniorId!==realId)comparisonStatus="ID_DIVERGENT";else if(seniorId&&realId)comparisonStatus="CORRECT"}
       snapshots.push({syncRunId:runId,sku:product.sku,skuKey:product.skuKey,ean:product.ean||null,eanKey:product.eanKey,name:mappedValue(product,"name")||product.sku,brand:mappedValue(product,"brand")||null,category:mappedValue(product,"category")||null,seniorData:JSON.parse(JSON.stringify(product.row)),tinyData:tinyMatch.record?JSON.parse(JSON.stringify(tinyMatch.record.row)):undefined,stock:stockValue,classification:mappedValue(classMatch.record??undefined,"classification")||null,price:decimal(priceMatch.record??undefined,"price"),cost:decimal(priceMatch.record??undefined,"cost"),comparisonStatus:comparisonStatus as never,productStatus:(physical.valid?"READY":"REVIEW_REQUIRED") as never,physicalIssues:JSON.parse(JSON.stringify(physical.issues))});
+      if(productIndex>0&&productIndex%1000===0)await prisma.syncRun.update({where:{id:runId},data:{progress:50+Math.round(productIndex/senior.length*35)}});
     }
-    for(let start=0;start<snapshots.length;start+=500)await prisma.productSnapshot.createMany({data:snapshots.slice(start,start+500)});
+    await prisma.syncRun.update({where:{id:runId},data:{progress:88}});
+    for(let start=0;start<snapshots.length;start+=500){await prisma.productSnapshot.createMany({data:snapshots.slice(start,start+500)});await prisma.syncRun.update({where:{id:runId},data:{progress:88+Math.round(Math.min(start+500,snapshots.length)/snapshots.length*10)}})}
     await prisma.syncRun.update({where:{id:runId},data:{status:errors.length?"PARTIAL":"COMPLETED",finishedAt:new Date(),progress:100,counts:{...counts,pending,withStock,total:senior.length},errors}});
   }catch(error){await prisma.syncRun.update({where:{id:runId},data:{status:"FAILED",finishedAt:new Date(),progress:100,errors:[error instanceof Error?error.message:"Falha inesperada"]}})}
 }
