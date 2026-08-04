@@ -4,7 +4,7 @@ import { get, put } from "@vercel/blob";
 import { assertSameOrigin, requireSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { generateTinyWorkbook, ExportColumn } from "@/lib/tiny-export";
-import { generateImageUrls } from "@/lib/image-urls";
+import { extractImageUrls, generateImageUrls } from "@/lib/image-urls";
 import { skuIdentity } from "@/lib/normalization";
 
 export const maxDuration = 300;
@@ -39,7 +39,8 @@ export async function POST(request: Request) {
       if (inactiveIdentities.has(skuIdentity(item.skuKey))) continue;
       const override = await prisma.productOverride.findUnique({ where: { skuKey: item.skuKey } });
       if (override?.excludedFromAnalysis) continue;
-      const imageUrls = (override?.imageUrls as string[] | null) ?? generateImageUrls({ pattern: String(config.imageUrlPattern ?? ""), sku: item.sku, ean: item.ean, count: Number(config.imageCount ?? 5), start: Number(config.imageStart ?? 1), extension: String(config.imageExtension ?? "jpg") });
+      const generatedImages = generateImageUrls({ pattern: String(config.imageUrlPattern ?? ""), sku: item.sku, ean: item.ean, count: Number(config.imageCount ?? 5), start: Number(config.imageStart ?? 1), extension: String(config.imageExtension ?? "jpg") });
+      const imageUrls = (override?.imageUrls as string[] | null) ?? [...new Set([...extractImageUrls(item.seniorData),...generatedImages])];
       products.push({ ...item, stock: item.stock?.toString(), price: item.price?.toString(), cost: item.cost?.toString(), weight: override?.weight, length: override?.length, width: override?.width, height: override?.height, approvedDescription: override?.approvedDescription ?? "", imageUrls });
     }
     const columns = (template?.columnMapping as unknown as ExportColumn[] | null) ?? defaults;

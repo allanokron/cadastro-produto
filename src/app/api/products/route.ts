@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { generateImageUrls } from "@/lib/image-urls";
+import { extractImageUrls, generateImageUrls } from "@/lib/image-urls";
 import { validatePhysicalData } from "@/lib/validation";
 import { skuIdentity } from "@/lib/normalization";
 
@@ -54,7 +54,8 @@ export async function GET(request: Request) {
         height: override?.height ?? text(item.seniorData, String((seniorSource?.columnMapping as Record<string, string> | null)?.height ?? "height")),
       });
       const generatedImages = generateImageUrls({ pattern: String(config.imageUrlPattern ?? ""), sku: item.sku, ean: item.ean, count: Number(config.imageCount ?? 5), start: Number(config.imageStart ?? 1), extension: String(config.imageExtension ?? "jpg") });
-      const imageUrls = (override?.imageUrls as string[] | null) ?? generatedImages;
+      const sourceImages = extractImageUrls(item.seniorData);
+      const imageUrls = (override?.imageUrls as string[] | null) ?? [...new Set([...sourceImages,...generatedImages])];
       const imageCheck = imageCheckMap.get(item.skuKey);
       const imagesChecked = imageCheck?.urlsSignature === JSON.stringify(imageUrls);
       const seniorId = flexibleId(item.seniorData, seniorIdHeader);

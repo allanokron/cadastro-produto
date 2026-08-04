@@ -14,3 +14,13 @@ export function generateImageUrls(options: {
       .replaceAll("{extensao}", options.extension.replace(/^\./, "")),
   );
 }
+
+export function extractImageUrls(data:unknown){
+  if(!data||typeof data!=="object")return [];
+  const urls:string[]=[];
+  for(const [key,value] of Object.entries(data as Record<string,unknown>)){
+    if(!/(imagem|image|img|foto|url)/i.test(key)||typeof value!=="string")continue;
+    urls.push(...(value.match(/https?:\/\/[^\s,;|"']+/gi)??[]));
+  }
+  return [...new Set(urls)];
+}

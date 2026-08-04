@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { assertSameOrigin, requireSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { generateImageUrls } from "@/lib/image-urls";
+import { extractImageUrls, generateImageUrls } from "@/lib/image-urls";
 
 export const maxDuration = 300;
 
@@ -21,7 +21,7 @@ export async function POST(request:Request){
     const run=await prisma.syncRun.findFirst({where:{status:{in:["COMPLETED","PARTIAL"]}},orderBy:{createdAt:"desc"}});
     if(!run)return NextResponse.json({checked:0,remaining:0});
     const [snapshots,overrides,setting,checks]=await Promise.all([
-      prisma.productSnapshot.findMany({where:{syncRunId:run.id,comparisonStatus:"PENDING_TINY"},select:{sku:true,skuKey:true,ean:true}}),
+      prisma.productSnapshot.findMany({where:{syncRunId:run.id,comparisonStatus:"PENDING_TINY"},select:{sku:true,skuKey:true,ean:true,seniorData:true}}),
       prisma.productOverride.findMany({where:{excludedFromAnalysis:false,imageUrls:{not:undefined}},select:{skuKey:true,imageUrls:true}}),
       prisma.appSetting.findUnique({where:{key:"content"}}),
       prisma.imageCheck.findMany(),
@@ -29,7 +29,7 @@ export async function POST(request:Request){
     const config=(setting?.value??{}) as Record<string,unknown>;
     const overrideMap=new Map(overrides.map((item)=>[item.skuKey,item.imageUrls as string[]]));
     const checkMap=new Map(checks.map((item)=>[item.skuKey,item.urlsSignature]));
-    const pending=snapshots.map((item)=>{const urls=overrideMap.get(item.skuKey)??generateImageUrls({pattern:String(config.imageUrlPattern??""),sku:item.sku,ean:item.ean,count:Number(config.imageCount??5),start:Number(config.imageStart??1),extension:String(config.imageExtension??"jpg")});return{skuKey:item.skuKey,urls,signature:JSON.stringify(urls)}}).filter((item)=>checkMap.get(item.skuKey)!==item.signature);
+    const pending=snapshots.map((item)=>{const generated=generateImageUrls({pattern:String(config.imageUrlPattern??""),sku:item.sku,ean:item.ean,count:Number(config.imageCount??5),start:Number(config.imageStart??1),extension:String(config.imageExtension??"jpg")});const urls=overrideMap.get(item.skuKey)??[...new Set([...extractImageUrls(item.seniorData),...generated])];return{skuKey:item.skuKey,urls,signature:JSON.stringify(urls)}}).filter((item)=>checkMap.get(item.skuKey)!==item.signature);
     const batch=pending.slice(0,300);
     const results=await Promise.all(batch.map(async(item)=>({...item,availableUrl:await firstAvailable(item.urls)})));
     if(results.length)await prisma.$transaction(results.map((item)=>prisma.imageCheck.upsert({where:{skuKey:item.skuKey},update:{urlsSignature:item.signature,available:Boolean(item.availableUrl),availableUrl:item.availableUrl,checkedAt:new Date()},create:{skuKey:item.skuKey,urlsSignature:item.signature,available:Boolean(item.availableUrl),availableUrl:item.availableUrl}})));
