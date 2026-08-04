@@ -3,6 +3,7 @@ import { z } from "zod";
 import { assertSameOrigin, requireSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { generateDescription } from "@/lib/ai";
+import { getOpenAIConfiguration } from "@/lib/openai-config";
 
 export const maxDuration = 300;
 
@@ -16,6 +17,7 @@ export async function POST(request: Request) {
     const products = await prisma.productSnapshot.findMany({ where: { syncRunId: latest.id, skuKey: { in: skuKeys } } });
     const setting = await prisma.appSetting.findUnique({ where: { key: "content" } });
     const config = (setting?.value ?? {}) as Record<string, unknown>;
+    const openAIConfig = await getOpenAIConfiguration();
     const prompt = String(config.aiPrompt ?? "Crie uma descrição comercial usando somente os dados fornecidos.");
     let generated = 0;
     const outputs: Record<string, string> = {};
@@ -24,7 +26,7 @@ export async function POST(request: Request) {
     for (const product of products) {
       const override = await prisma.productOverride.findUnique({ where: { skuKey: product.skuKey } });
       const input = { nome: product.name, marca: product.brand, categoria: product.category, sku: product.sku, ean: product.ean, dadosTecnicos: product.seniorData, informacoesAdicionais: override?.additionalInformation };
-      const attempt = await prisma.aiGeneration.create({ data: { skuKey: product.skuKey, status: "RUNNING", model: process.env.OPENAI_MODEL ?? "gpt-5.6-luna", prompt, input } });
+      const attempt = await prisma.aiGeneration.create({ data: { skuKey: product.skuKey, status: "RUNNING", model: openAIConfig.model, prompt, input } });
       try {
         const output = await generateDescription(input, prompt);
         await prisma.aiGeneration.update({ where: { id: attempt.id }, data: { status: "COMPLETED", output } });

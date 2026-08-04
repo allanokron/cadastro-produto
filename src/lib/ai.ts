@@ -1,10 +1,12 @@
 import OpenAI from "openai";
+import { getOpenAIConfiguration } from "@/lib/openai-config";
 
 export async function generateDescription(input: Record<string, unknown>, prompt: string) {
-  if (!process.env.OPENAI_API_KEY) throw new Error("OPENAI_API_KEY não configurada.");
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const config = await getOpenAIConfiguration();
+  if (!config.apiKey) throw new Error("Configure a chave da OpenAI em Conteúdo > Integração OpenAI.");
+  const client = new OpenAI({ apiKey: config.apiKey });
   const response = await client.responses.create({
-    model: process.env.OPENAI_MODEL ?? "gpt-5.6-luna",
+    model: config.model,
     input: `${prompt}\n\nDados fornecidos:\n${JSON.stringify(input, null, 2)}`,
   });
   return response.output_text.trim();
