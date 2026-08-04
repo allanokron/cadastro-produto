@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { Search, X, Trash2, FileImage, FileText, Upload, Settings } from "lucide-react";
@@ -79,6 +79,26 @@ export function PromoGenerator() {
     } finally {
       setSearching(false);
     }
+  }, []);
+
+  const searchRef = useRef(search);
+  useEffect(() => { searchRef.current = search; });
+
+  useEffect(() => {
+    let active = true;
+    const check = async () => {
+      try {
+        await fetch("/api/image-checks", { method: "POST", headers: { "content-type": "application/json" } });
+        if (active && searchRef.current.trim()) {
+          const res = await fetch(`/api/promo-products?search=${encodeURIComponent(searchRef.current)}`);
+          const data = await res.json();
+          setResults(data.items ?? []);
+        }
+      } catch {}
+    };
+    void check();
+    const timer = setInterval(() => void check(), 60000);
+    return () => { active = false; clearInterval(timer); };
   }, []);
 
   function onSearchChange(value: string) {
