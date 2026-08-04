@@ -20,10 +20,12 @@ export async function processSync(runId:string){
     for(let index=0;index<sources.length;index++){
       const source=sources[index];
       try{
-        const rows=await readPublicSheet(source.spreadsheetUrl,source.sheetName);
+        const rows=await readPublicSheet(source.spreadsheetUrl,source.sheetName,source.headerRow);
         const mapping=source.columnMapping as Record<string,string>;
         const items=rows.map((row,rowIndex)=>({...mapSourceRow(row,mapping),rowNumber:rowIndex+2,sourceId:source.id}));
-        loaded.set(source.type,items); counts[source.type]=items.length;
+        const usableKeys=items.filter((item)=>item.skuKey||item.eanKey).length;
+        if(items.length>0&&usableKeys===0)throw new Error(`Nenhuma chave SKU/EAN foi encontrada. Revise a linha do cabeçalho e o mapeamento.`);
+        loaded.set(source.type,items); counts[source.type]=items.length;counts[`${source.type}_KEYED`]=usableKeys;
         for(let start=0;start<items.length;start+=500){
           await prisma.sourceRecord.createMany({data:items.slice(start,start+500).map(item=>({syncRunId:runId,dataSourceId:source.id,rowNumber:item.rowNumber,skuOriginal:item.sku||null,skuKey:item.skuKey||null,eanOriginal:item.ean||null,eanKey:item.eanKey,raw:JSON.parse(JSON.stringify(item.row))}))});
         }
@@ -39,7 +41,7 @@ export async function processSync(runId:string){
     for(let productIndex=0;productIndex<senior.length;productIndex++){
       const product=senior[productIndex];
       if(!product.skuKey)continue;
-      const tinyMatch=matchIndexed(product,indexes.tiny);const classMatch=matchIndexed(product,indexes.classifications);const priceMatch=matchIndexed(product,indexes.prices);
+      const tinyMatch=matchIndexed(product,indexes.tiny);const priceMatch=matchIndexed(product,indexes.prices);
       let comparisonStatus:string=tinyMatch.status;
       if(tinyMatch.status==="UNMATCHED"){comparisonStatus="PENDING_TINY";pending++}
       if(duplicateSkus.has(product.skuKey))comparisonStatus="AMBIGUOUS";
@@ -48,7 +50,9 @@ export async function processSync(runId:string){
       const stockValue=stockValues.length?stockValues.reduce((total,value)=>total+value,0):null;if((stockValue??0)>0)withStock++;
       const physical=validatePhysicalData({weight:mappedValue(product,"weight"),length:mappedValue(product,"length"),width:mappedValue(product,"width"),height:mappedValue(product,"height")});
       if(tinyMatch.record){const seniorId=mappedValue(product,"tinyId");const realId=mappedValue(tinyMatch.record,"tinyId");if(!seniorId&&realId)comparisonStatus="ID_MISSING";else if(seniorId&&realId&&seniorId!==realId)comparisonStatus="ID_DIVERGENT";else if(seniorId&&realId)comparisonStatus="CORRECT"}
-      snapshots.push({syncRunId:runId,sku:product.sku,skuKey:product.skuKey,ean:product.ean||null,eanKey:product.eanKey,name:mappedValue(product,"name")||product.sku,brand:mappedValue(product,"brand")||null,category:mappedValue(product,"category")||null,seniorData:JSON.parse(JSON.stringify(product.row)),tinyData:tinyMatch.record?JSON.parse(JSON.stringify(tinyMatch.record.row)):undefined,stock:stockValue,classification:mappedValue(classMatch.record??undefined,"classification")||null,price:decimal(priceMatch.record??undefined,"price"),cost:decimal(priceMatch.record??undefined,"cost"),comparisonStatus:comparisonStatus as never,productStatus:(physical.valid?"READY":"REVIEW_REQUIRED") as never,physicalIssues:JSON.parse(JSON.stringify(physical.issues))});
+      const classMatches=indexes.classifications.sku.get(product.skuKey)??(product.eanKey?indexes.classifications.ean.get(product.eanKey):undefined)??[];
+      const classValues=[...new Set(classMatches.map((item)=>mappedValue(item,"classification")).filter(Boolean))];
+      snapshots.push({syncRunId:runId,sku:product.sku,skuKey:product.skuKey,ean:product.ean||null,eanKey:product.eanKey,name:mappedValue(product,"name")||product.sku,brand:mappedValue(product,"brand")||null,category:mappedValue(product,"category")||null,seniorData:JSON.parse(JSON.stringify(product.row)),tinyData:tinyMatch.record?JSON.parse(JSON.stringify(tinyMatch.record.row)):undefined,stock:stockValue,classification:classValues.length===1?classValues[0]:null,price:decimal(priceMatch.record??undefined,"price"),cost:decimal(priceMatch.record??undefined,"cost"),comparisonStatus:comparisonStatus as never,productStatus:(physical.valid&&classValues.length<=1?"READY":"REVIEW_REQUIRED") as never,physicalIssues:JSON.parse(JSON.stringify({...physical.issues,...(classValues.length>1?{classification:`Classificações conflitantes: ${classValues.join(", ")}`}:{})}))});
       if(productIndex>0&&productIndex%1000===0)await prisma.syncRun.update({where:{id:runId},data:{progress:50+Math.round(productIndex/senior.length*35)}});
     }
     await prisma.syncRun.update({where:{id:runId},data:{progress:88}});

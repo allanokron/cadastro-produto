@@ -123,6 +123,7 @@ export const DataSourceScalarFieldEnum = {
   type: 'type',
   spreadsheetUrl: 'spreadsheetUrl',
   sheetName: 'sheetName',
+  headerRow: 'headerRow',
   keyPriority: 'keyPriority',
   columnMapping: 'columnMapping',
   active: 'active',

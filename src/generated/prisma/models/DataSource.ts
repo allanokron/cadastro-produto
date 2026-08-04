@@ -20,8 +20,18 @@ export type DataSourceModel = runtime.Types.Result.DefaultSelection<Prisma.$Data
 
 export type AggregateDataSource = {
   _count: DataSourceCountAggregateOutputType | null
+  _avg: DataSourceAvgAggregateOutputType | null
+  _sum: DataSourceSumAggregateOutputType | null
   _min: DataSourceMinAggregateOutputType | null
   _max: DataSourceMaxAggregateOutputType | null
+}
+
+export type DataSourceAvgAggregateOutputType = {
+  headerRow: number | null
+}
+
+export type DataSourceSumAggregateOutputType = {
+  headerRow: number | null
 }
 
 export type DataSourceMinAggregateOutputType = {
@@ -30,6 +40,7 @@ export type DataSourceMinAggregateOutputType = {
   type: $Enums.SourceType | null
   spreadsheetUrl: string | null
   sheetName: string | null
+  headerRow: number | null
   active: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -41,6 +52,7 @@ export type DataSourceMaxAggregateOutputType = {
   type: $Enums.SourceType | null
   spreadsheetUrl: string | null
   sheetName: string | null
+  headerRow: number | null
   active: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -52,6 +64,7 @@ export type DataSourceCountAggregateOutputType = {
   type: number
   spreadsheetUrl: number
   sheetName: number
+  headerRow: number
   keyPriority: number
   columnMapping: number
   active: number
@@ -61,12 +74,21 @@ export type DataSourceCountAggregateOutputType = {
 }
 
 
+export type DataSourceAvgAggregateInputType = {
+  headerRow?: true
+}
+
+export type DataSourceSumAggregateInputType = {
+  headerRow?: true
+}
+
 export type DataSourceMinAggregateInputType = {
   id?: true
   name?: true
   type?: true
   spreadsheetUrl?: true
   sheetName?: true
+  headerRow?: true
   active?: true
   createdAt?: true
   updatedAt?: true
@@ -78,6 +100,7 @@ export type DataSourceMaxAggregateInputType = {
   type?: true
   spreadsheetUrl?: true
   sheetName?: true
+  headerRow?: true
   active?: true
   createdAt?: true
   updatedAt?: true
@@ -89,6 +112,7 @@ export type DataSourceCountAggregateInputType = {
   type?: true
   spreadsheetUrl?: true
   sheetName?: true
+  headerRow?: true
   keyPriority?: true
   columnMapping?: true
   active?: true
@@ -135,6 +159,18 @@ export type DataSourceAggregateArgs<ExtArgs extends runtime.Types.Extensions.Int
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: DataSourceAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: DataSourceSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: DataSourceMinAggregateInputType
@@ -165,6 +201,8 @@ export type DataSourceGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   _count?: DataSourceCountAggregateInputType | true
+  _avg?: DataSourceAvgAggregateInputType
+  _sum?: DataSourceSumAggregateInputType
   _min?: DataSourceMinAggregateInputType
   _max?: DataSourceMaxAggregateInputType
 }
@@ -175,12 +213,15 @@ export type DataSourceGroupByOutputType = {
   type: $Enums.SourceType
   spreadsheetUrl: string
   sheetName: string
+  headerRow: number
   keyPriority: runtime.JsonValue
   columnMapping: runtime.JsonValue
   active: boolean
   createdAt: Date
   updatedAt: Date
   _count: DataSourceCountAggregateOutputType | null
+  _avg: DataSourceAvgAggregateOutputType | null
+  _sum: DataSourceSumAggregateOutputType | null
   _min: DataSourceMinAggregateOutputType | null
   _max: DataSourceMaxAggregateOutputType | null
 }
@@ -209,6 +250,7 @@ export type DataSourceWhereInput = {
   type?: Prisma.EnumSourceTypeFilter<"DataSource"> | $Enums.SourceType
   spreadsheetUrl?: Prisma.StringFilter<"DataSource"> | string
   sheetName?: Prisma.StringFilter<"DataSource"> | string
+  headerRow?: Prisma.IntFilter<"DataSource"> | number
   keyPriority?: Prisma.JsonFilter<"DataSource">
   columnMapping?: Prisma.JsonFilter<"DataSource">
   active?: Prisma.BoolFilter<"DataSource"> | boolean
@@ -223,6 +265,7 @@ export type DataSourceOrderByWithRelationInput = {
   type?: Prisma.SortOrder
   spreadsheetUrl?: Prisma.SortOrder
   sheetName?: Prisma.SortOrder
+  headerRow?: Prisma.SortOrder
   keyPriority?: Prisma.SortOrder
   columnMapping?: Prisma.SortOrder
   active?: Prisma.SortOrder
@@ -240,6 +283,7 @@ export type DataSourceWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"DataSource"> | string
   spreadsheetUrl?: Prisma.StringFilter<"DataSource"> | string
   sheetName?: Prisma.StringFilter<"DataSource"> | string
+  headerRow?: Prisma.IntFilter<"DataSource"> | number
   keyPriority?: Prisma.JsonFilter<"DataSource">
   columnMapping?: Prisma.JsonFilter<"DataSource">
   active?: Prisma.BoolFilter<"DataSource"> | boolean
@@ -254,14 +298,17 @@ export type DataSourceOrderByWithAggregationInput = {
   type?: Prisma.SortOrder
   spreadsheetUrl?: Prisma.SortOrder
   sheetName?: Prisma.SortOrder
+  headerRow?: Prisma.SortOrder
   keyPriority?: Prisma.SortOrder
   columnMapping?: Prisma.SortOrder
   active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.DataSourceCountOrderByAggregateInput
+  _avg?: Prisma.DataSourceAvgOrderByAggregateInput
   _max?: Prisma.DataSourceMaxOrderByAggregateInput
   _min?: Prisma.DataSourceMinOrderByAggregateInput
+  _sum?: Prisma.DataSourceSumOrderByAggregateInput
 }
 
 export type DataSourceScalarWhereWithAggregatesInput = {
@@ -273,6 +320,7 @@ export type DataSourceScalarWhereWithAggregatesInput = {
   type?: Prisma.EnumSourceTypeWithAggregatesFilter<"DataSource"> | $Enums.SourceType
   spreadsheetUrl?: Prisma.StringWithAggregatesFilter<"DataSource"> | string
   sheetName?: Prisma.StringWithAggregatesFilter<"DataSource"> | string
+  headerRow?: Prisma.IntWithAggregatesFilter<"DataSource"> | number
   keyPriority?: Prisma.JsonWithAggregatesFilter<"DataSource">
   columnMapping?: Prisma.JsonWithAggregatesFilter<"DataSource">
   active?: Prisma.BoolWithAggregatesFilter<"DataSource"> | boolean
@@ -286,6 +334,7 @@ export type DataSourceCreateInput = {
   type: $Enums.SourceType
   spreadsheetUrl: string
   sheetName: string
+  headerRow?: number
   keyPriority?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   columnMapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
   active?: boolean
@@ -300,6 +349,7 @@ export type DataSourceUncheckedCreateInput = {
   type: $Enums.SourceType
   spreadsheetUrl: string
   sheetName: string
+  headerRow?: number
   keyPriority?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   columnMapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
   active?: boolean
@@ -314,6 +364,7 @@ export type DataSourceUpdateInput = {
   type?: Prisma.EnumSourceTypeFieldUpdateOperationsInput | $Enums.SourceType
   spreadsheetUrl?: Prisma.StringFieldUpdateOperationsInput | string
   sheetName?: Prisma.StringFieldUpdateOperationsInput | string
+  headerRow?: Prisma.IntFieldUpdateOperationsInput | number
   keyPriority?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   columnMapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -328,6 +379,7 @@ export type DataSourceUncheckedUpdateInput = {
   type?: Prisma.EnumSourceTypeFieldUpdateOperationsInput | $Enums.SourceType
   spreadsheetUrl?: Prisma.StringFieldUpdateOperationsInput | string
   sheetName?: Prisma.StringFieldUpdateOperationsInput | string
+  headerRow?: Prisma.IntFieldUpdateOperationsInput | number
   keyPriority?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   columnMapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -342,6 +394,7 @@ export type DataSourceCreateManyInput = {
   type: $Enums.SourceType
   spreadsheetUrl: string
   sheetName: string
+  headerRow?: number
   keyPriority?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   columnMapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
   active?: boolean
@@ -355,6 +408,7 @@ export type DataSourceUpdateManyMutationInput = {
   type?: Prisma.EnumSourceTypeFieldUpdateOperationsInput | $Enums.SourceType
   spreadsheetUrl?: Prisma.StringFieldUpdateOperationsInput | string
   sheetName?: Prisma.StringFieldUpdateOperationsInput | string
+  headerRow?: Prisma.IntFieldUpdateOperationsInput | number
   keyPriority?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   columnMapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -368,6 +422,7 @@ export type DataSourceUncheckedUpdateManyInput = {
   type?: Prisma.EnumSourceTypeFieldUpdateOperationsInput | $Enums.SourceType
   spreadsheetUrl?: Prisma.StringFieldUpdateOperationsInput | string
   sheetName?: Prisma.StringFieldUpdateOperationsInput | string
+  headerRow?: Prisma.IntFieldUpdateOperationsInput | number
   keyPriority?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   columnMapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -381,11 +436,16 @@ export type DataSourceCountOrderByAggregateInput = {
   type?: Prisma.SortOrder
   spreadsheetUrl?: Prisma.SortOrder
   sheetName?: Prisma.SortOrder
+  headerRow?: Prisma.SortOrder
   keyPriority?: Prisma.SortOrder
   columnMapping?: Prisma.SortOrder
   active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type DataSourceAvgOrderByAggregateInput = {
+  headerRow?: Prisma.SortOrder
 }
 
 export type DataSourceMaxOrderByAggregateInput = {
@@ -394,6 +454,7 @@ export type DataSourceMaxOrderByAggregateInput = {
   type?: Prisma.SortOrder
   spreadsheetUrl?: Prisma.SortOrder
   sheetName?: Prisma.SortOrder
+  headerRow?: Prisma.SortOrder
   active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -405,9 +466,14 @@ export type DataSourceMinOrderByAggregateInput = {
   type?: Prisma.SortOrder
   spreadsheetUrl?: Prisma.SortOrder
   sheetName?: Prisma.SortOrder
+  headerRow?: Prisma.SortOrder
   active?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type DataSourceSumOrderByAggregateInput = {
+  headerRow?: Prisma.SortOrder
 }
 
 export type DataSourceScalarRelationFilter = {
@@ -417,6 +483,14 @@ export type DataSourceScalarRelationFilter = {
 
 export type EnumSourceTypeFieldUpdateOperationsInput = {
   set?: $Enums.SourceType
+}
+
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type DataSourceCreateNestedOneWithoutRecordsInput = {
@@ -439,6 +513,7 @@ export type DataSourceCreateWithoutRecordsInput = {
   type: $Enums.SourceType
   spreadsheetUrl: string
   sheetName: string
+  headerRow?: number
   keyPriority?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   columnMapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
   active?: boolean
@@ -452,6 +527,7 @@ export type DataSourceUncheckedCreateWithoutRecordsInput = {
   type: $Enums.SourceType
   spreadsheetUrl: string
   sheetName: string
+  headerRow?: number
   keyPriority?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   columnMapping: Prisma.JsonNullValueInput | runtime.InputJsonValue
   active?: boolean
@@ -481,6 +557,7 @@ export type DataSourceUpdateWithoutRecordsInput = {
   type?: Prisma.EnumSourceTypeFieldUpdateOperationsInput | $Enums.SourceType
   spreadsheetUrl?: Prisma.StringFieldUpdateOperationsInput | string
   sheetName?: Prisma.StringFieldUpdateOperationsInput | string
+  headerRow?: Prisma.IntFieldUpdateOperationsInput | number
   keyPriority?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   columnMapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -494,6 +571,7 @@ export type DataSourceUncheckedUpdateWithoutRecordsInput = {
   type?: Prisma.EnumSourceTypeFieldUpdateOperationsInput | $Enums.SourceType
   spreadsheetUrl?: Prisma.StringFieldUpdateOperationsInput | string
   sheetName?: Prisma.StringFieldUpdateOperationsInput | string
+  headerRow?: Prisma.IntFieldUpdateOperationsInput | number
   keyPriority?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   columnMapping?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   active?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -538,6 +616,7 @@ export type DataSourceSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   type?: boolean
   spreadsheetUrl?: boolean
   sheetName?: boolean
+  headerRow?: boolean
   keyPriority?: boolean
   columnMapping?: boolean
   active?: boolean
@@ -553,6 +632,7 @@ export type DataSourceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   type?: boolean
   spreadsheetUrl?: boolean
   sheetName?: boolean
+  headerRow?: boolean
   keyPriority?: boolean
   columnMapping?: boolean
   active?: boolean
@@ -566,6 +646,7 @@ export type DataSourceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   type?: boolean
   spreadsheetUrl?: boolean
   sheetName?: boolean
+  headerRow?: boolean
   keyPriority?: boolean
   columnMapping?: boolean
   active?: boolean
@@ -579,6 +660,7 @@ export type DataSourceSelectScalar = {
   type?: boolean
   spreadsheetUrl?: boolean
   sheetName?: boolean
+  headerRow?: boolean
   keyPriority?: boolean
   columnMapping?: boolean
   active?: boolean
@@ -586,7 +668,7 @@ export type DataSourceSelectScalar = {
   updatedAt?: boolean
 }
 
-export type DataSourceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "spreadsheetUrl" | "sheetName" | "keyPriority" | "columnMapping" | "active" | "createdAt" | "updatedAt", ExtArgs["result"]["dataSource"]>
+export type DataSourceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "spreadsheetUrl" | "sheetName" | "headerRow" | "keyPriority" | "columnMapping" | "active" | "createdAt" | "updatedAt", ExtArgs["result"]["dataSource"]>
 export type DataSourceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   records?: boolean | Prisma.DataSource$recordsArgs<ExtArgs>
   _count?: boolean | Prisma.DataSourceCountOutputTypeDefaultArgs<ExtArgs>
@@ -605,6 +687,7 @@ export type $DataSourcePayload<ExtArgs extends runtime.Types.Extensions.Internal
     type: $Enums.SourceType
     spreadsheetUrl: string
     sheetName: string
+    headerRow: number
     keyPriority: runtime.JsonValue
     columnMapping: runtime.JsonValue
     active: boolean
@@ -1039,6 +1122,7 @@ export interface DataSourceFieldRefs {
   readonly type: Prisma.FieldRef<"DataSource", 'SourceType'>
   readonly spreadsheetUrl: Prisma.FieldRef<"DataSource", 'String'>
   readonly sheetName: Prisma.FieldRef<"DataSource", 'String'>
+  readonly headerRow: Prisma.FieldRef<"DataSource", 'Int'>
   readonly keyPriority: Prisma.FieldRef<"DataSource", 'Json'>
   readonly columnMapping: Prisma.FieldRef<"DataSource", 'Json'>
   readonly active: Prisma.FieldRef<"DataSource", 'Boolean'>

@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     await requireSession();
     const mode = new URL(request.url).searchParams.get("mode") ?? "pending";
     const run = await prisma.syncRun.findFirst({ where: { status: { in: ["COMPLETED", "PARTIAL"] } }, orderBy: { createdAt: "desc" } });
-    if (!run) return NextResponse.json({ items: [] });
+    if (!run) return NextResponse.json({ items: [], run: null });
     const [inactive, settings, seniorSource, tinySource] = await Promise.all([
       prisma.productOverride.findMany({ where: { excludedFromAnalysis: true }, select: { skuKey: true } }),
       prisma.appSetting.findUnique({ where: { key: "content" } }),
@@ -56,7 +56,7 @@ export async function GET(request: Request) {
       const needsReview = !physical.valid || !override?.approvedDescription || imageUrls.length === 0;
       return { ...item, override, aiDescription: aiMap.get(item.skuKey) ?? null, physicalIssues: physical.issues, physicalValues: physical.values, imageUrls, needsReview, validationStatus, seniorTinyId: seniorId, tinyId };
     });
-    return NextResponse.json({ items: mode === "validation" ? result.filter((item) => item.validationStatus !== "ID_UNAVAILABLE") : result });
+    return NextResponse.json({ items: mode === "validation" ? result.filter((item) => item.validationStatus !== "ID_UNAVAILABLE") : result, run: { id: run.id, createdAt: run.createdAt, finishedAt: run.finishedAt } });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Não autorizado." }, { status: 400 });
   }

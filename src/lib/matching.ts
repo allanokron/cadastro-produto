@@ -21,11 +21,18 @@ export function createMatchIndexes<T extends Matchable>(records: T[]) {
 
 export function matchIndexed<T extends Matchable>(record: Matchable, indexes: ReturnType<typeof createMatchIndexes<T>>) {
   const sku = indexes.sku.get(record.skuKey) ?? [];
-  if (sku.length === 1) return { status: "MATCHED_SKU" as const, record: sku[0] };
-  if (sku.length > 1) return { status: "AMBIGUOUS" as const, record: null };
   const ean = record.eanKey
     ? indexes.ean.get(record.eanKey) ?? []
     : [];
+  if (sku.length === 1) {
+    if (ean.length === 1 && ean[0] !== sku[0]) return { status: "AMBIGUOUS" as const, record: null };
+    return { status: "MATCHED_SKU" as const, record: sku[0] };
+  }
+  if (sku.length > 1) {
+    const intersection = ean.filter((candidate) => sku.includes(candidate));
+    if (intersection.length === 1) return { status: "MATCHED_SKU" as const, record: intersection[0] };
+    return { status: "AMBIGUOUS" as const, record: null };
+  }
   if (ean.length === 1) return { status: "MATCHED_EAN" as const, record: ean[0] };
   if (ean.length > 1) return { status: "AMBIGUOUS" as const, record: null };
   return { status: "UNMATCHED" as const, record: null };
