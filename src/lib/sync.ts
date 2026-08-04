@@ -61,6 +61,7 @@ export async function processSync(runId:string){
     }
     await prisma.syncRun.update({where:{id:runId},data:{progress:88}});
     for(let start=0;start<snapshots.length;start+=500){await prisma.productSnapshot.createMany({data:snapshots.slice(start,start+500)});await prisma.syncRun.update({where:{id:runId},data:{progress:88+Math.round(Math.min(start+500,snapshots.length)/snapshots.length*10)}})}
+    await prisma.imageCheck.deleteMany();
     await prisma.syncRun.update({where:{id:runId},data:{status:errors.length?"PARTIAL":"COMPLETED",finishedAt:new Date(),progress:100,counts:{...counts,pending,withStock,total:senior.length},errors}});
   }catch(error){await prisma.syncRun.update({where:{id:runId},data:{status:"FAILED",finishedAt:new Date(),progress:100,errors:[error instanceof Error?error.message:"Falha inesperada"]}})}
 }

@@ -411,7 +411,8 @@ export const ModelName = {
   AiGeneration: 'AiGeneration',
   ExportRun: 'ExportRun',
   ExportItem: 'ExportItem',
-  AppSetting: 'AppSetting'
+  AppSetting: 'AppSetting',
+  ImageCheck: 'ImageCheck'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -427,7 +428,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "loginAttempt" | "dataSource" | "syncRun" | "sourceRecord" | "productSnapshot" | "productOverride" | "tinyTemplate" | "variationGroup" | "variationItem" | "aiGeneration" | "exportRun" | "exportItem" | "appSetting"
+    modelProps: "user" | "session" | "loginAttempt" | "dataSource" | "syncRun" | "sourceRecord" | "productSnapshot" | "productOverride" | "tinyTemplate" | "variationGroup" | "variationItem" | "aiGeneration" | "exportRun" | "exportItem" | "appSetting" | "imageCheck"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1541,6 +1542,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ImageCheck: {
+      payload: Prisma.$ImageCheckPayload<ExtArgs>
+      fields: Prisma.ImageCheckFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ImageCheckFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageCheckPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ImageCheckFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageCheckPayload>
+        }
+        findFirst: {
+          args: Prisma.ImageCheckFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageCheckPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ImageCheckFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageCheckPayload>
+        }
+        findMany: {
+          args: Prisma.ImageCheckFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageCheckPayload>[]
+        }
+        create: {
+          args: Prisma.ImageCheckCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageCheckPayload>
+        }
+        createMany: {
+          args: Prisma.ImageCheckCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ImageCheckCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageCheckPayload>[]
+        }
+        delete: {
+          args: Prisma.ImageCheckDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageCheckPayload>
+        }
+        update: {
+          args: Prisma.ImageCheckUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageCheckPayload>
+        }
+        deleteMany: {
+          args: Prisma.ImageCheckDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ImageCheckUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ImageCheckUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageCheckPayload>[]
+        }
+        upsert: {
+          args: Prisma.ImageCheckUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImageCheckPayload>
+        }
+        aggregate: {
+          args: Prisma.ImageCheckAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateImageCheck>
+        }
+        groupBy: {
+          args: Prisma.ImageCheckGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImageCheckGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ImageCheckCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImageCheckCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1794,6 +1869,17 @@ export const AppSettingScalarFieldEnum = {
 } as const
 
 export type AppSettingScalarFieldEnum = (typeof AppSettingScalarFieldEnum)[keyof typeof AppSettingScalarFieldEnum]
+
+
+export const ImageCheckScalarFieldEnum = {
+  skuKey: 'skuKey',
+  urlsSignature: 'urlsSignature',
+  available: 'available',
+  availableUrl: 'availableUrl',
+  checkedAt: 'checkedAt'
+} as const
+
+export type ImageCheckScalarFieldEnum = (typeof ImageCheckScalarFieldEnum)[keyof typeof ImageCheckScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2162,6 +2248,7 @@ export type GlobalOmitConfig = {
   exportRun?: Prisma.ExportRunOmit
   exportItem?: Prisma.ExportItemOmit
   appSetting?: Prisma.AppSettingOmit
+  imageCheck?: Prisma.ImageCheckOmit
 }
 
 /* Types for Logging */

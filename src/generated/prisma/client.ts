@@ -116,3 +116,8 @@ export type ExportItem = Prisma.ExportItemModel
  * 
  */
 export type AppSetting = Prisma.AppSettingModel
+/**
+ * Model ImageCheck
+ * 
+ */
+export type ImageCheck = Prisma.ImageCheckModel

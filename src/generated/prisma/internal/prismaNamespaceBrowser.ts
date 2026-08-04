@@ -65,7 +65,8 @@ export const ModelName = {
   AiGeneration: 'AiGeneration',
   ExportRun: 'ExportRun',
   ExportItem: 'ExportItem',
-  AppSetting: 'AppSetting'
+  AppSetting: 'AppSetting',
+  ImageCheck: 'ImageCheck'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -298,6 +299,17 @@ export const AppSettingScalarFieldEnum = {
 } as const
 
 export type AppSettingScalarFieldEnum = (typeof AppSettingScalarFieldEnum)[keyof typeof AppSettingScalarFieldEnum]
+
+
+export const ImageCheckScalarFieldEnum = {
+  skuKey: 'skuKey',
+  urlsSignature: 'urlsSignature',
+  available: 'available',
+  availableUrl: 'availableUrl',
+  checkedAt: 'checkedAt'
+} as const
+
+export type ImageCheckScalarFieldEnum = (typeof ImageCheckScalarFieldEnum)[keyof typeof ImageCheckScalarFieldEnum]
 
 
 export const SortOrder = {
