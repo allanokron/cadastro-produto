@@ -57,7 +57,7 @@ export async function GET(request: Request) {
       const sourceImages = extractImageUrls(item.seniorData);
       const imageUrls = (override?.imageUrls as string[] | null) ?? [...new Set([...sourceImages,...generatedImages])];
       const imageCheck = imageCheckMap.get(item.skuKey);
-      const imagesChecked = imageCheck?.urlsSignature === JSON.stringify(imageUrls);
+      const imagesChecked = imageCheck?.urlsSignature === `v2:${JSON.stringify(imageUrls)}`;
       const seniorId = flexibleId(item.seniorData, seniorIdHeader);
       const tinyId = flexibleId(item.tinyData, tinyIdHeader);
       const validationStatus = !seniorId && tinyId ? "ID_MISSING" : seniorId && tinyId && seniorId !== tinyId ? "ID_DIVERGENT" : seniorId && tinyId ? "CORRECT" : "ID_UNAVAILABLE";
