@@ -291,7 +291,7 @@ export function PromoGenerator() {
       <div className="card mb-6">
         <h3 className="mb-3 font-bold text-gray-700">Buscar e adicionar produtos</h3>
         <div className="relative">
-          <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             className="input pl-9"
             value={search}
@@ -299,7 +299,7 @@ export function PromoGenerator() {
             placeholder="Buscar por nome, SKU ou EAN..."
           />
           {searching && (
-            <span className="absolute right-3 top-3 text-xs text-gray-400">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
               Buscando...
             </span>
           )}

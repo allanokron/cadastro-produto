@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 const sourceTypes = [["SENIOR","Base de produtos Senior"],["TINY","Base de produtos Tiny"],["STOCK","Base de estoque"],["CLASSIFICATION","Classificação"],["PRICE_COST","Preços e custos"]] as const;
-const fields = ["sku","ean","name","brand","category","weight","length","width","height","tinyId","stock","classification","price","cost"];
+const fields = ["sku","ean","name","brand","category","weight","length","width","height","tinyId","stock","classification","price","cost","image"];
 type Source = {id:string;type:string;name:string;spreadsheetUrl:string;sheetName:string;headerRow:number;columnMapping:Record<string,string>;active:boolean};
 
 export function SourcesManager({initial}:{initial:Source[]}) {

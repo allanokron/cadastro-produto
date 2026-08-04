@@ -3,6 +3,10 @@ import { requireSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { extractImageUrls, generateImageUrls } from "@/lib/image-urls";
 
+function text(data: unknown, key: string) {
+  return String((data as Record<string, unknown> | null)?.[key] ?? "").trim();
+}
+
 export async function GET(request: Request) {
   try {
     await requireSession();
@@ -15,7 +19,7 @@ export async function GET(request: Request) {
     });
     if (!run) return NextResponse.json({ items: [] });
 
-    const [settings, inactive, overrides] = await Promise.all([
+    const [settings, inactive, overrides, tinySource] = await Promise.all([
       prisma.appSetting.findUnique({ where: { key: "content" } }),
       prisma.productOverride.findMany({
         where: { excludedFromAnalysis: true },
@@ -24,11 +28,14 @@ export async function GET(request: Request) {
       prisma.productOverride.findMany({
         select: { skuKey: true, imageUrls: true },
       }),
+      prisma.dataSource.findUnique({ where: { type: "TINY" } }),
     ]);
 
     const inactiveKeys = inactive.map((i) => i.skuKey);
     const overrideMap = new Map(overrides.map((o) => [o.skuKey, o]));
     const config = (settings?.value ?? {}) as Record<string, unknown>;
+    const tinyMapping = (tinySource?.columnMapping ?? {}) as Record<string, string>;
+    const tinyImageCol = tinyMapping.image ?? "";
 
     const where = {
       syncRunId: run.id,
@@ -57,6 +64,7 @@ export async function GET(request: Request) {
         stock: true,
         price: true,
         seniorData: true,
+        tinyData: true,
       },
     });
 
@@ -70,8 +78,23 @@ export async function GET(request: Request) {
         start: Number(config.imageStart ?? 1),
         extension: String(config.imageExtension ?? "jpg"),
       });
+
       const seniorUrls = extractImageUrls(row.seniorData);
-      const imageUrls = (override?.imageUrls as string[] | null) ?? [...new Set([...seniorUrls, ...generated])];
+      const tinyUrls = extractImageUrls(row.tinyData);
+
+      let tinyImageUrl = "";
+      if (tinyImageCol && row.tinyData && typeof row.tinyData === "object") {
+        tinyImageUrl = text(row.tinyData, tinyImageCol);
+      }
+
+      const imageUrls = (override?.imageUrls as string[] | null) ?? [
+        ...new Set([
+          ...(tinyImageUrl ? [tinyImageUrl] : []),
+          ...tinyUrls,
+          ...seniorUrls,
+          ...generated,
+        ]),
+      ];
       const firstImageUrl = imageUrls[0] ?? null;
 
       return {
