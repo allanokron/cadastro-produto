@@ -4,6 +4,7 @@
   "functions": {
     "src/app/api/sync-runs/route.ts": { "maxDuration": 300 },
     "src/app/api/exports/route.ts": { "maxDuration": 300 },
-    "src/app/api/ai/descriptions/route.ts": { "maxDuration": 300 }
+    "src/app/api/ai/descriptions/route.ts": { "maxDuration": 300 },
+    "src/app/api/image-checks/route.ts": { "maxDuration": 300 }
   }
 }

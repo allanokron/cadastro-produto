@@ -49,7 +49,7 @@ export async function POST(request:Request){
     const config=(setting?.value??{}) as Record<string,unknown>;
     const tinyMapping=(tinySource?.columnMapping??{}) as Record<string,string>;
     const tinyImageCol=tinyMapping.image??"";
-    const overrideMap=new Map(overrides.map((item)=>[item.skuKey,item.imageUrls as string[]]));
+    const overrideMap=new Map<string,string[]>(overrides.map((item)=>[item.skuKey,item.imageUrls as string[]]));
     const checkMap=new Map(checks.map((item)=>[item.skuKey,item.urlsSignature]));
     const pending=snapshots.map((item)=>{
       const urls=buildImageUrls(item,config,tinyImageCol,overrideMap.get(item.skuKey)??null);
@@ -57,7 +57,7 @@ export async function POST(request:Request){
     }).filter((item)=>checkMap.get(item.skuKey)!==item.signature);
     const batch=pending.slice(0,100);const checkedResults:{skuKey:string;signature:string;availableUrl:string|null|undefined}[]=[];
     for(let start=0;start<batch.length;start+=50)checkedResults.push(...await Promise.all(batch.slice(start,start+50).map(async(item)=>({...item,availableUrl:await firstAvailable(item.urls)}))));
-    const results=checkedResults.filter((item):item is typeof item&{availableUrl:string|null}=>item.availableUrl!==undefined);
+    const results=checkedResults.map((item)=>({...item,availableUrl:item.availableUrl??null}));
     if(results.length)await prisma.$transaction(results.map((item)=>prisma.imageCheck.upsert({where:{skuKey:item.skuKey},update:{urlsSignature:item.signature,available:Boolean(item.availableUrl),availableUrl:item.availableUrl,checkedAt:new Date()},create:{skuKey:item.skuKey,urlsSignature:item.signature,available:Boolean(item.availableUrl),availableUrl:item.availableUrl}})));
     return NextResponse.json({checked:results.length,remaining:Math.max(0,pending.length-results.length)});
   }catch(error){return NextResponse.json({error:error instanceof Error?error.message:"Falha ao verificar imagens."},{status:400})}

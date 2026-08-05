@@ -31,8 +31,8 @@ export async function GET(request: Request) {
       prisma.dataSource.findUnique({ where: { type: "TINY" } }),
     ]);
 
-    const inactiveKeys = inactive.map((i) => i.skuKey);
-    const overrideMap = new Map(overrides.map((o) => [o.skuKey, o]));
+    const inactiveKeys = inactive.map((i: { skuKey: string }) => i.skuKey);
+    const overrideMap = new Map(overrides.map((o: { skuKey: string; imageUrls: unknown }) => [o.skuKey, o]));
     const config = (settings?.value ?? {}) as Record<string, unknown>;
     const tinyMapping = (tinySource?.columnMapping ?? {}) as Record<string, string>;
     const tinyImageCol = tinyMapping.image ?? "";
@@ -68,7 +68,7 @@ export async function GET(request: Request) {
       },
     });
 
-    const items = rows.map((row) => {
+    const items = rows.map((row: { sku: string; skuKey: string; name: string; brand: string | null; ean: string | null; stock: { toString(): string } | null; price: { toString(): string } | null; seniorData: unknown; tinyData: unknown }) => {
       const override = overrideMap.get(row.skuKey);
       const generated = generateImageUrls({
         pattern: String(config.imageUrlPattern ?? ""),
@@ -87,7 +87,7 @@ export async function GET(request: Request) {
         tinyImageUrl = text(row.tinyData, tinyImageCol);
       }
 
-      const imageUrls = (override?.imageUrls as string[] | null) ?? [
+      const imageUrls = ((override as { imageUrls?: string[] } | undefined)?.imageUrls as string[] | null) ?? [
         ...new Set([
           ...(tinyImageUrl ? [tinyImageUrl] : []),
           ...tinyUrls,
